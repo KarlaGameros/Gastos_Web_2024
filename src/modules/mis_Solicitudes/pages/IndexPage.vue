@@ -3,7 +3,7 @@
     <div class="row bg-grey-2">
       <div class="col-9">
         <div class="q-pa-md q-gutter-sm">
-          <div class="text-gray-ieen-1 text-h6">Mis solicitudes de gastos</div>
+          <div class="text-gray-ieen-1 text-h6">Mis solictudes de gastos</div>
           <q-breadcrumbs>
             <template v-slot:separator>
               <q-icon size="1.5em" name="chevron_right" color="primary" />

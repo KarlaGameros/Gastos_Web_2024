@@ -1,5 +1,4 @@
 <template>
-  <br />
   <q-form class="row q-col-gutter-md" @submit="onSubmit">
     <div v-if="!visualizar" class="col-lg-4 col-md-4 col-xs-12">
       <q-select
@@ -80,6 +79,7 @@
         rows-per-page-label="Filas por pagina"
         no-data-label="No hay registros"
         class="my-sticky-header-table"
+        :rows-per-page-options="[5, 15, 20, 25, 50]"
       >
         <template v-slot:top-right>
           <q-input

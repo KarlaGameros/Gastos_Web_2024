@@ -25,7 +25,7 @@
             active-color="purple-ieen"
             indicator-color="purple-ieen"
             align="justify"
-            class="bg-grey-4 text-purple-ieen shadow-2 text-bold"
+            class="bg-grey-4 text-grey shadow-2 text-bold"
           >
             <q-tab
               icon="pending_actions"
@@ -116,9 +116,25 @@ const siglas = "SOLIC-ADMON";
 
 onBeforeMount(() => {
   leerPermisos();
+  cargarData();
 });
 
 //-----------------------------------------------------------
+
+const cargarData = async () => {
+  $q.loading.show({
+    spinner: QSpinnerFacebook,
+    spinnerColor: "purple-ieen",
+    spinnerSize: 140,
+    backgroundColor: "purple-3",
+    message: "Espere un momento, por favor...",
+    messageColor: "black",
+  });
+  await administracionStore.load_Solicitudes_Administracion();
+  await administracionStore.load_Recibidas_Administracion();
+  await administracionStore.load_Pendientes_Firmas();
+  $q.loading.hide();
+};
 
 const leerPermisos = async () => {
   $q.loading.show({

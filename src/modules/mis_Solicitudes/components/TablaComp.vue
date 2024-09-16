@@ -11,6 +11,7 @@
         no-data-label="No hay registros"
         class="my-sticky-last-column-table"
         :loading="loading"
+        :rows-per-page-options="[5, 15, 20, 25, 50]"
         color="blue-grey"
       >
         <template v-slot:top-right>
@@ -100,7 +101,8 @@
                   v-if="
                     props.row.estatus == 'Pendiente' ||
                     props.row.estatus == 'Aprobado por jefe de area' ||
-                    props.row.estatus == 'Borrador'
+                    props.row.estatus == 'Borrador' ||
+                    !props.row.pagado
                   "
                   flat
                   round
@@ -305,6 +307,7 @@ import { useDestinoStore } from "src/stores/destino-store";
 import { storeToRefs } from "pinia";
 import { useComprobarStore } from "src/stores/comprobar-store";
 import { useSolicitudesRFStore } from "src/stores/solicitudes-rf-store";
+import { useDistribucionStore } from "src/stores/distribuciones-store";
 import Swal from "sweetalert2";
 import OficioGasto from "src/helpers/OficioGasto";
 
@@ -314,7 +317,9 @@ const $q = useQuasar();
 const misSolicitudesStore = useMisSolicitudesStore();
 const destinosStore = useDestinoStore();
 const comprobarStore = useComprobarStore();
+const distribucionesStore = useDistribucionStore();
 const solictudesRFStore = useSolicitudesRFStore();
+const { list_Distribuciones } = storeToRefs(distribucionesStore);
 const { list_Mis_Solicitudes, loading } = storeToRefs(misSolicitudesStore);
 
 //-----------------------------------------------------------
@@ -390,10 +395,10 @@ const editarSolicitud = async (id) => {
 };
 
 const cancelarSolicitud = async (row) => {
-  if (row.aprobado_Recursos_Financieros == true) {
+  if (row.pagado == true) {
     Swal.fire({
       title: "Atención",
-      text: "La solicitud ya fue aprobada por recursos financieros, no podrá cancelar",
+      text: "La solicitud ya fue pagada por recursos financieros, no podrá cancelar",
       icon: "warning",
     });
   } else {

@@ -3,9 +3,7 @@ import autoTable from "jspdf-autotable";
 
 const GeneraComprobacion = async (solicitud_gasto, comprobaciones) => {
   try {
-    let doc = new jsPDF({
-      format: "a4",
-    });
+    const doc = new jsPDF({ orientation: "portrait", format: "letter" });
     doc.setPage();
     doc.setFontSize(17);
     doc.setFont("bold");
@@ -19,13 +17,25 @@ const GeneraComprobacion = async (solicitud_gasto, comprobaciones) => {
     let y = 30;
     let img = new Image();
     img.src = require("../assets/IEEN300.png");
-    doc.addImage(img, "PNG", 10, x, imgWidth, imgHeight);
-    let title = "Relación detallada de documentos comprobatorios de gastos";
-    let titleWidth = doc.getTextWidth(title);
-    let titleX = (pdfWidth - titleWidth) / 2;
-
-    doc.text(titleX, 20, title);
+    doc.addImage(img, "png", 10, 5, 30, 20);
+    //let title = "Relación detallada de documentos comprobatorios de gastos";
+    //let titleWidth = doc.getTextWidth(title);
+    //let titleX = (pdfWidth - titleWidth) / 2;
+    doc.setFontSize(10);
+    doc.setFont("normal", "bold");
+    doc.text(
+      "RELACIÓN DETALLADA DE DOCUMENTOS COMPROBATORIOS DE GASTOS",
+      110,
+      15,
+      null,
+      null,
+      "center"
+    );
+    doc.setFontSize(12);
+    doc.text(`FOLIO: ${solicitud_gasto.folio}`, 90, 21);
+    //doc.text(titleX, 20, title);
     y += 5;
+    doc.setFont("normal", "normal");
     doc.setFontSize(12);
     doc.text(
       `Relación de documentos que se anexan para comprobar los gastos otorgados el día ${solicitud_gasto.fecha_Pago_Largo}`,
@@ -87,7 +97,14 @@ const GeneraComprobacion = async (solicitud_gasto, comprobaciones) => {
       ],
       [
         {
-          content: `Diferencia  ${solicitud_gasto.monto_Reintegro}`,
+          content: `Reintegro  ${solicitud_gasto.monto_Reintegro}`,
+          colSpan: 6,
+          styles: { halign: "right" },
+        },
+      ],
+      [
+        {
+          content: `Diferencia  $${solicitud_gasto.monto_Saldo}`,
           colSpan: 6,
           styles: { halign: "right" },
         },

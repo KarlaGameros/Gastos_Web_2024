@@ -7,6 +7,7 @@ export const useSolicitudesAreaStore = defineStore("useSolicitudesAreaStore", {
     modal: false,
     list_Solicitudes_ByArea: [],
     list_Historial: [],
+    list_Historial_Filtro: [],
   }),
   actions: {
     //-----------------------------------------------------------
@@ -87,7 +88,7 @@ export const useSolicitudesAreaStore = defineStore("useSolicitudesAreaStore", {
           const { success, data } = resp.data;
           if (success === true) {
             if (data) {
-              this.list_Historial = data.map((solicitud) => {
+              let list = data.map((solicitud) => {
                 return {
                   id: solicitud.id,
                   folio: solicitud.folio,
@@ -116,8 +117,11 @@ export const useSolicitudesAreaStore = defineStore("useSolicitudesAreaStore", {
                   monto_Saldo: `$${solicitud.monto_Saldo.toFixed(2)}`,
                   fecha_Registro: solicitud.fecha_Registro,
                   destino: solicitud.destino,
+                  area_Id: solicitud.area_Id,
                 };
               });
+              this.list_Historial = list;
+              this.list_Historial_Filtro = list;
             }
           } else {
             return { success, data };

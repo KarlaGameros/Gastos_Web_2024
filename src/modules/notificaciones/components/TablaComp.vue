@@ -2,56 +2,86 @@
   <div class="row q-pa-lg">
     <div class="col">
       <q-table
-        :visible-columns="visible_Columns"
-        :rows="notificaciones_all"
+        grid
+        flat
+        bordered
+        :rows="list_Notificaciones_Filtro"
         :columns="columns"
+        row-key="name"
         :filter="filter"
-        :loading="isLoading"
-        :pagination="pagination"
-        row-key="id"
+        hide-header
+        :rows-per-page-options="[5, 15, 20, 25, 50]"
+        v-model:pagination="pagination"
         rows-per-page-label="Filas por pagina"
         no-data-label="No hay registros"
       >
+        <template v-slot:top-left>
+          <q-select
+            style="width: 350px"
+            outlined
+            dense
+            color="purple-ieen"
+            v-model="sistema_Id"
+            :options="sistemas"
+            label="Sistemas"
+          >
+            <template v-slot:before>
+              <div class="text-subtitle1">
+                <q-icon name="arrow_right" />Filtrar por:
+              </div>
+            </template>
+          </q-select>
+        </template>
         <template v-slot:top-right>
           <q-input
+            outlined
             borderless
             dense
             debounce="300"
             v-model="filter"
-            placeholder="Buscar.."
+            placeholder="Search"
           >
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
         </template>
-        <template v-slot:body="props">
-          <q-tr :props="props">
-            <q-td v-for="col in props.cols" :key="col.name" :props="props">
-              <div v-if="col.name === 'id'">
-                <q-btn
-                  flat
-                  round
-                  color="purple-ieen"
-                  icon="search"
-                  @click="toSolicitudes"
-                >
-                  <q-tooltip>Ver</q-tooltip>
-                </q-btn>
-              </div>
-              <div v-else-if="col.name == 'leido'">
+        <template v-slot:item="props">
+          <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3">
+            <q-card flat bordered>
+              <q-card-section class="text-center">
+                <div class="text-right">
+                  <q-btn
+                    v-if="!props.row.leido"
+                    icon="check_circle"
+                    color="purple-ieen"
+                    flat
+                    @click="toSolicitudes(props.row)"
+                  >
+                    <q-tooltip>Marcar como leido</q-tooltip>
+                  </q-btn>
+                  <q-btn v-else icon="search" color="purple-ieen" flat>
+                    <q-tooltip>Ver solicitud</q-tooltip>
+                  </q-btn>
+                </div>
                 <q-badge
                   :color="props.row.leido == true ? 'green' : 'orange'"
                   :label="props.row.leido == true ? 'Leido' : 'Sin leer'"
                 >
                   <q-icon
                     :name="props.row.leido == true ? 'done' : 'warning'"
-                  />
-                </q-badge>
-              </div>
-              <label v-else>{{ col.value }}</label>
-            </q-td>
-          </q-tr>
+                  /> </q-badge
+                ><br />
+                {{ props.row.fecha_Registro }} <br />
+                <strong>Sistema: {{ props.row.sistema }}</strong>
+                <br />
+                <strong>{{ props.row.titulo }}</strong>
+              </q-card-section>
+              <q-card-section class="text-caption">
+                <div>{{ props.row.mensaje }} g</div>
+              </q-card-section>
+            </q-card>
+          </div>
         </template>
       </q-table>
     </div>
@@ -59,41 +89,104 @@
 </template>
 
 <script setup>
-import { useQuasar } from "quasar";
-import { onBeforeMount, ref } from "vue";
+import { useQuasar, QSpinnerFacebook } from "quasar";
+import { onBeforeMount, ref, watchEffect } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { useNotificacionStore } from "../../../stores/notificaciones-store";
+import { useAuthStore } from "src/stores/auth-store";
+import { EncryptStorage } from "storage-encryption";
 
 //-----------------------------------------------------------
 
 const $q = useQuasar();
 const router = useRouter();
 const notificacionStore = useNotificacionStore();
-const { notificaciones_all, isLoading } = storeToRefs(notificacionStore);
+const authStore = useAuthStore();
+const encryptStorage = new EncryptStorage("SECRET_KEY", "sessionStorage");
+const { sistemas } = storeToRefs(authStore);
+const { notificaciones_all } = storeToRefs(notificacionStore);
+const sistema_Id = ref({ value: 0, label: "Todos" });
+const list_Notificaciones_Filtro = ref([]);
 
 //-----------------------------------------------------------
 
 onBeforeMount(() => {
-  notificacionStore.loadNotificacionesAll();
+  cargarData();
 });
 
 //-----------------------------------------------------------
 
-const toSolicitudes = async () => {
-  router.push({
-    name: "misSolicitudes",
+const cargarData = async () => {
+  $q.loading.show({
+    spinner: QSpinnerFacebook,
+    spinnerColor: "purple-ieen",
+    spinnerSize: 140,
+    backgroundColor: "purple-3",
+    message: "Espere un momento, por favor...",
+    messageColor: "black",
+  });
+  await notificacionStore.loadNotificaciones();
+  await notificacionStore.loadNotificacionesAll();
+  $q.loading.hide();
+};
+
+const toSolicitudes = async (row) => {
+  $q.loading.show({
+    spinner: QSpinnerFacebook,
+    spinnerColor: "purple-ieen",
+    spinnerSize: 140,
+    backgroundColor: "purple-3",
+    message: "Espere un momento, por favor...",
+    messageColor: "black",
+  });
+  let resp = await notificacionStore.leerNotificacion(row.id);
+  if (resp.success == true) {
+    await notificacionStore.loadNotificaciones();
+  }
+  let url = sistemas.value.find((x) => x.value == row.sistema_Id);
+  if (url.label == "Gastos a Comprobar") {
+    router.push({
+      name: "misSolicitudes",
+    });
+  } else {
+    window.location =
+      url.url +
+      `/#/?key=${encryptStorage.decrypt("key")}&sistema=${
+        row.sistema_Id
+      }&usr=${encryptStorage.decrypt("usuario")}`;
+  }
+  $q.loading.hide();
+};
+
+const filtrar = (notificaciones, filtro) => {
+  list_Notificaciones_Filtro.value = notificaciones.filter((item) => {
+    let cumple = true;
+    if (filtro.sistema !== undefined) {
+      if (filtro.sistema == 0) {
+        cumple = cumple && item.sistema_Id === item.sistema_Id;
+      } else {
+        cumple = cumple && item.sistema_Id === filtro.sistema;
+      }
+    }
+    return cumple;
   });
 };
+
+watchEffect(() => {
+  const filtro = {};
+  if (sistema_Id.value != null) filtro.sistema = sistema_Id.value.value;
+  filtrar(notificaciones_all.value, filtro);
+});
 
 //-----------------------------------------------------------
 
 const columns = [
   {
-    name: "solicitud_Id",
+    name: "sistema",
     align: "center",
-    label: "solicitud_Id",
-    field: "solicitud_Id",
+    label: "Sistema",
+    field: "sistema",
     sortable: true,
   },
   {
@@ -104,10 +197,17 @@ const columns = [
     sortable: true,
   },
   {
-    name: "descripcion",
+    name: "leido",
     align: "center",
-    label: "Descripción",
-    field: "descripcion",
+    label: "Leído",
+    field: "leido",
+    sortable: true,
+  },
+  {
+    name: "mensaje",
+    align: "center",
+    label: "Mensaje",
+    field: "mensaje",
     sortable: true,
   },
   {
@@ -115,13 +215,6 @@ const columns = [
     align: "center",
     label: "Fecha registro",
     field: "fecha_Registro",
-    sortable: true,
-  },
-  {
-    name: "leido",
-    align: "center",
-    label: "Leído",
-    field: "leido",
     sortable: true,
   },
   {
@@ -133,14 +226,6 @@ const columns = [
   },
 ];
 
-const visible_Columns = [
-  "titulo",
-  "descripcion",
-  "fecha_Registro",
-  "leido",
-  "id",
-];
-
 const pagination = ref({
   page: 1,
   rowsPerPage: 8,
@@ -150,3 +235,18 @@ const pagination = ref({
 
 const filter = ref("");
 </script>
+<style lang="sass">
+.my-sticky-last-column-table
+  thead tr:last-child th:last-child
+    /* bg color is important for th; just specify one */
+    background-color: white
+
+  td:last-child
+    background-color: white
+
+  th:last-child,
+  td:last-child
+    position: sticky
+    right: 0
+    z-index: 1
+</style>

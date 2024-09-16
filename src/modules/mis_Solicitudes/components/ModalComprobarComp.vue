@@ -98,28 +98,44 @@
                   v-model="solicitud.actividad"
                   label="Actividad a realizar"
                   type="textarea"
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="edit_note" />
+                  </template>
+                </q-input>
               </div>
               <div class="col-12">
                 <q-input
                   disable
                   v-model="solicitud.destino_String"
                   label="Destinos"
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="location_on" />
+                  </template>
+                </q-input>
               </div>
               <div class="col-lg-3 col-md-3 col-xs-12">
                 <q-input
                   disable
                   v-model="solicitud.fecha_Salida"
                   label="Fecha de salida"
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="event" />
+                  </template>
+                </q-input>
               </div>
               <div class="col-lg-3 col-md-3 col-xs-12">
                 <q-input
                   disable
                   v-model="solicitud.fecha_LLegada"
                   label="Fecha de llegada"
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="event" />
+                  </template>
+                </q-input>
               </div>
               <div class="col-lg-3 col-md-3 col-xs-12">
                 <q-input
@@ -142,7 +158,25 @@
                   disable
                   v-model="solicitud.medio_Transporte"
                   label="Medio de transporte"
-                />
+                >
+                  <template
+                    v-if="
+                      solicitud.medio_Transporte != null &&
+                      solicitud.medio_Transporte != 'Ninguno'
+                    "
+                    v-slot:prepend
+                  >
+                    <q-icon
+                      :name="
+                        solicitud.medio_Transporte == 'Terrestre'
+                          ? 'directions_car'
+                          : solicitud.medio_Transporte == 'Aéreo'
+                          ? 'flight'
+                          : 'directions_boat'
+                      "
+                    />
+                  </template>
+                </q-input>
               </div>
               <div
                 v-if="solicitud.medio_Transporte != 'Ninguno'"
@@ -233,7 +267,10 @@
                   label="Observaciones"
                   hint="Ingrese observaciones que necesita que administración verifique"
                   type="textarea"
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="edit_note" /> </template
+                ></q-input>
               </div>
               <div class="col-12" v-if="solicitud.saldo_Cero == false">
                 <q-input
@@ -243,7 +280,10 @@
                   hint="Gastos de viaje"
                   type="textarea"
                   placeholder="Los viáticos y gastos de hospedaje serán asignados conforme a tabulador vigente. En caso de requerir gastos de viaje (transporte terrestre, transporte aéreo, traslados, gasolina, peajes, entre otros) favor de enlistar el tipo de gasto de viaje y el monto solicitado en este espacio."
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="edit_note" /> </template
+                ></q-input>
               </div>
               <div class="col-12">
                 <q-input
@@ -253,7 +293,10 @@
                   label="Itinerario"
                   hint="En espacio para indicar el itinerario a seguir durante la comisión"
                   type="textarea"
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="edit_note" /> </template
+                ></q-input>
               </div>
             </q-tab-panel>
             <q-tab-panel name="reporte">
@@ -271,15 +314,15 @@
                 </div>
                 <div class="col-12 col-xs-12 col-md-12">
                   <div
-                    class="text-subtitle1 text-bold text-purple-ieen q-pl-xs"
+                    class="text-subtitle1 text-bold text-gray-ieen-1 q-pl-xs"
                   >
+                    <q-icon name="label_important" />
                     Actividad realizada
                   </div>
                   <q-input
                     :disable="visualizar"
                     color="purple-ieen"
-                    v-model="informe.actividad_Realizada"
-                    label="Actividad realizada"
+                    v-model.trim="informe.actividad_Realizada"
                     hint="Describa la actividad que realizó"
                     type="textarea"
                     lazy-rules
@@ -290,15 +333,15 @@
                 </div>
                 <div class="col-12 col-xs-12 col-md-12">
                   <div
-                    class="text-subtitle1 text-bold text-purple-ieen q-pl-xs q-pt-xs"
+                    class="text-subtitle1 text-bold text-gray-ieen-1 q-pl-xs q-pt-xs"
                   >
+                    <q-icon name="label_important" />
                     Conclusión y/o resultados obtenidos
                   </div>
                   <q-input
                     :disable="visualizar"
                     color="purple-ieen"
-                    v-model="informe.conclusion"
-                    label="Conclusión y/o resultados obtenidos"
+                    v-model.trim="informe.conclusion"
                     hint="Describa la conclusión y los resultados obtenidos"
                     type="textarea"
                     lazy-rules
@@ -347,6 +390,12 @@
               </q-form>
             </q-tab-panel>
             <q-tab-panel name="evidencias" class="row">
+              <div
+                class="text-subtitle1 text-bold text-gray-ieen-1 q-pl-xs q-pt-xs"
+              >
+                <q-icon name="label_important" />
+                Evidencias
+              </div>
               <div class="col-12 justify-end">
                 <div class="text-right q-gutter-xs">
                   <q-btn
@@ -369,6 +418,12 @@
             </q-tab-panel>
             <q-tab-panel name="comprobacion">
               <div class="row">
+                <div
+                  class="text-subtitle1 text-bold text-gray-ieen-1 q-pl-xs q-pt-xs"
+                >
+                  <q-icon name="label_important" />
+                  Comprobación de gastos
+                </div>
                 <div class="col-12 justify-end">
                   <div class="text-right q-gutter-xs">
                     <q-btn
@@ -460,7 +515,6 @@ const loading = ref(false);
 const comprobarStore = useComprobarStore();
 const misSolicitudesStore = useMisSolicitudesStore();
 const reintegroStore = useReintegroStore();
-
 const { solicitud, visualizar } = storeToRefs(misSolicitudesStore);
 const { modal, informe, list_Evidencias, list_Comprobaciones_Solicitud } =
   storeToRefs(comprobarStore);
@@ -524,6 +578,13 @@ const reporte = async () => {
       messageColor: "black",
     });
     let resp = null;
+    if (informe.value.actividad_Realizada != null) {
+      informe.value.actividad_Realizada =
+        informe.value.actividad_Realizada.replace(/\s+/g, " ");
+    }
+    if (informe.value.conclusion != null) {
+      informe.value.conclusion = informe.value.conclusion.replace(/\s+/g, " ");
+    }
     if (informe.value.id === null) {
       resp = await comprobarStore.create_Informe(
         solicitud.value.id,

@@ -383,6 +383,7 @@ const actualizarModal = (valor) => {
   solicitudesRFStore.actualizarVisualizar(false);
   solicitudesRFStore.actualizarModal(valor);
   solicitudesRFStore.initPago();
+  limpiarDistribucion();
 };
 
 const limpiarDistribucion = () => {

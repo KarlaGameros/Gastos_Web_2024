@@ -7,6 +7,7 @@
         :filter="filter"
         :loading="is_loading"
         :pagination="pagination"
+        :rows-per-page-options="[5, 15, 20, 25, 50]"
         row-key="id"
         rows-per-page-label="Filas por pagina"
         no-data-label="No hay registros"

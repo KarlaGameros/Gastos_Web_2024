@@ -78,6 +78,7 @@
               class="col-12 text-bold text-center text-h6 text-gray-ieen-1 q-pt-lg"
             >
               <div>VER REINTEGRO</div>
+
               <iframe
                 :src="reintegro.comprobante"
                 width="100%"

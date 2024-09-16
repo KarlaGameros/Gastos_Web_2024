@@ -67,7 +67,11 @@
                   label="Área"
                   hint="Área de la cual se esta realizando la solicitud"
                   disable
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="apartment" />
+                  </template>
+                </q-input>
               </div>
               <div class="col-12">
                 <q-input
@@ -75,7 +79,11 @@
                   label="Solicitante"
                   hint="Empleado que realiza la solicitud"
                   disable
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="person" />
+                  </template>
+                </q-input>
               </div>
               <div class="col-12">
                 <q-input
@@ -83,7 +91,11 @@
                   label="Responsable"
                   hint="Empleado responsable de área"
                   disable
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="supervisor_account" />
+                  </template>
+                </q-input>
               </div>
               <div class="col-12">
                 <q-input
@@ -105,14 +117,22 @@
                   disable
                   v-model="solicitud.fecha_Salida"
                   label="Fecha de salida"
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="event" />
+                  </template>
+                </q-input>
               </div>
               <div class="col-lg-3 col-md-3 col-xs-12">
                 <q-input
                   disable
                   v-model="solicitud.fecha_LLegada"
                   label="Fecha de llegada"
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="event" />
+                  </template>
+                </q-input>
               </div>
               <div class="col-lg-3 col-md-3 col-xs-12">
                 <q-input
@@ -465,8 +485,10 @@
               />
               <q-btn
                 v-if="
-                  solicitud.estatus == 'Pendiente de conclusión' &&
-                  concluir == true
+                  (solicitud.estatus == 'Pendiente de conclusión' &&
+                    concluir == true) ||
+                  (solicitud.monto_Asignado == solicitud.monto_Reintegro &&
+                    solicitud.monto_Saldo == 0)
                 "
                 type="button"
                 color="secondary"

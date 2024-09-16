@@ -137,12 +137,14 @@ import { storeToRefs } from "pinia";
 import { watch } from "vue";
 import { useMisSolicitudesStore } from "src/stores/mis-solicitudes-store";
 import { useReintegroStore } from "src/stores/reintegro-store";
+import { useComprobarStore } from "src/stores/comprobar-store";
 
 //-----------------------------------------------------------
 
 const $q = useQuasar();
 const misSolicitudesStore = useMisSolicitudesStore();
 const reintegroStore = useReintegroStore();
+const comprobarStore = useComprobarStore();
 const { reintegro, modal, visualizar } = storeToRefs(reintegroStore);
 const { solicitud } = storeToRefs(misSolicitudesStore);
 
@@ -186,8 +188,10 @@ const eliminar_Reintegro = async () => {
     );
     if (resp.success) {
       reintegroStore.init_Reintegro();
-      await misSolicitudesStore.load_Solicitud(solicitud.value.id);
+      misSolicitudesStore.initSolicitud();
       actualizarModal(false);
+      comprobarStore.actualizarModal(false);
+      await misSolicitudesStore.load_Mis_Solicitudes();
       $q.loading.hide();
       $q.notify({
         type: "positive",

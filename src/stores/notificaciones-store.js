@@ -12,8 +12,7 @@ export const useNotificacionStore = defineStore("notificacion", {
   actions: {
     async loadNotificaciones() {
       try {
-        this.isLoading = true;
-        const resp = await api.get("/GastosComprobar/NotificacionesGC");
+        const resp = await api.get("/NotificacionesUniverso");
         if (resp.status == 200) {
           const { success, data } = resp.data;
           if (success == true) {
@@ -22,17 +21,24 @@ export const useNotificacionStore = defineStore("notificacion", {
                 (notificacion) => {
                   return {
                     id: notificacion.id,
+                    empleado_Id: notificacion.empleado_Id,
+                    empleado: notificacion.empleado,
+                    pase_Id: notificacion.pase_Id,
+                    pase: notificacion.pase,
                     titulo: notificacion.titulo,
-                    descripcion: notificacion.descripcion,
-                    fecha_Registro: notificacion.fecha_Registro,
+                    mensaje: notificacion.mensaje,
                     leido: notificacion.leido,
-                    denuncia_Id: notificacion.denuncia_Id,
-                    solicitud_Id: notificacion.solicitud_Id,
+                    fecha_Registro: notificacion.fecha_Registro,
+                    fecha_Lectura: notificacion.fecha_Lectura,
+                    registro_Id: notificacion.registro_Id,
+                    sistema: notificacion.sistema,
+                    sistema_Id: notificacion.sistema_Id,
                     tipo: notificacion.tipo,
                   };
                 }
               );
-              this.notificaciones = notificaciones_array;
+              let filtro = notificaciones_array.filter((x) => x.leido == false);
+              this.notificaciones = filtro;
               this.no_notificaciones = data.no_Notificaciones;
             }
           }
@@ -47,31 +53,31 @@ export const useNotificacionStore = defineStore("notificacion", {
           success: false,
           data: "Ocurrió un error, inténtelo de nuevo. Si el error persiste, contacte a soporte",
         };
-      } finally {
-        this.isLoading = false;
       }
     },
 
     async loadNotificacionesAll() {
       try {
-        this.isLoading = true;
-        const resp = await api.get("/GastosComprobar/NotificacionesGC/GetAll");
+        const resp = await api.get("/NotificacionesUniverso/GetAll");
         if (resp.status == 200) {
           const { success, data } = resp.data;
           if (success == true) {
             if (data) {
-              const notificaciones_array = data.map((notificacion) => {
+              this.notificaciones_all = data.map((notificacion) => {
                 return {
-                  id: notificacion.id,
-                  titulo: notificacion.titulo,
-                  descripcion: notificacion.descripcion,
+                  empleado_Id: notificacion.empleado_Id,
+                  fecha_Lectura: notificacion.fecha_Lectura,
                   fecha_Registro: notificacion.fecha_Registro,
+                  id: notificacion.id,
                   leido: notificacion.leido,
-                  denuncia_Id: notificacion.denuncia_Id,
-                  solicitud_Id: notificacion.solicitud_Id,
+                  mensaje: notificacion.mensaje,
+                  registro_Id: notificacion.registro_Id,
+                  sistema: notificacion.sistema,
+                  sistema_Id: notificacion.sistema_Id,
+                  tipo: notificacion.tipo,
+                  titulo: notificacion.titulo,
                 };
               });
-              this.notificaciones_all = notificaciones_array;
             }
           }
         } else {
@@ -85,19 +91,34 @@ export const useNotificacionStore = defineStore("notificacion", {
           success: false,
           data: "Ocurrió un error, inténtelo de nuevo. Si el error persiste, contacte a soporte",
         };
-      } finally {
-        this.isLoading = false;
       }
     },
 
-    async leerNotificacion(notificacionId) {
+    async leerNotificacion(id) {
       try {
-        const resp = await api.get(
-          `/GastosComprobar/NotificacionesGC/Leer/${notificacionId}`
-        );
+        const resp = await api.get(`/NotificacionesUniverso/Leer/${id}`);
         if (resp.status == 200) {
           const { success, data } = resp.data;
-          this.loadNotificaciones();
+          return { success, data };
+        } else {
+          return {
+            success: false,
+            data: "Ocurrió un error, inténtelo de nuevo. Si el error persiste, contacte a soporte",
+          };
+        }
+      } catch (error) {
+        return {
+          success: false,
+          data: "Ocurrió un error, inténtelo de nuevo. Si el error persiste, contacte a soporte",
+        };
+      }
+    },
+
+    async leerTodas() {
+      try {
+        const resp = await api.get("/NotificacionesUniverso/LeerTodas");
+        if (resp.status == 200) {
+          const { success, data } = resp.data;
           return { success, data };
         } else {
           return {

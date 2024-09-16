@@ -28,7 +28,6 @@
           <div class="col-12">
             <q-input
               color="purple-ieen"
-              filled
               v-model="evidencia.descripcion"
               label="Descripción"
               hint="Ingrese descripción"
@@ -37,7 +36,6 @@
           <div class="col-12 col-xs-12 col-md-12">
             <q-file
               color="purple-ieen"
-              filled
               bottom-slots
               v-model="evidencia.evidencia"
               label=""

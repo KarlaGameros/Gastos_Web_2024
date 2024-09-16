@@ -16,6 +16,27 @@
         </div>
       </div>
     </div>
+    <div class="row q-pl-lg q-pt-lg">
+      <q-select
+        style="width: 250px"
+        dense
+        filled
+        v-model="año"
+        :options="years"
+        label="Filtrar por año"
+        class="q-pr-md"
+        color="purple-ieen"
+      />
+      <q-select
+        style="width: 250px"
+        dense
+        filled
+        v-model="area_Id"
+        :options="list_Areas_Filtro"
+        label="Filtrar por área"
+        color="purple-ieen"
+      />
+    </div>
     <div class="row q-pa-lg">
       <div class="col">
         <q-card>
@@ -25,7 +46,7 @@
             active-color="purple-ieen"
             indicator-color="purple-ieen"
             align="justify"
-            class="bg-grey-4 text-purple-ieen shadow-2 text-bold"
+            class="bg-grey-4 text-grey shadow-2 text-bold"
           >
             <q-tab
               icon="pending_actions"
@@ -33,7 +54,7 @@
               label="Pendientes de aprobación"
             >
               <q-badge color="purple" floating>
-                {{ list_Solicitudes_RF.length }}
+                {{ list_Solicitudes_RF_Filtro.length }}
               </q-badge>
             </q-tab>
             <q-tab
@@ -43,7 +64,7 @@
             >
               <q-badge color="purple" floating>
                 {{
-                  list_Solictudes_Aprobadas_RF.filter(
+                  list_Solictudes_Aprobadas_RF_Filtro.filter(
                     (x) =>
                       x.pagado == false &&
                       x.estatus != "Cancelado" &&
@@ -60,7 +81,7 @@
             >
               <q-badge color="purple" floating>
                 {{
-                  list_Solictudes_Aprobadas_RF.filter(
+                  list_Solictudes_Aprobadas_RF_Filtro.filter(
                     (x) =>
                       x.estatus != "Concluido" &&
                       x.estatus != "Cancelado" &&
@@ -120,17 +141,17 @@
     <ModalComp />
     <ModalPago />
     <ModalReintegro />
-    <ModalComprobarComp />
     <ModalFacturas />
   </q-page>
 </template>
 
 <script setup>
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, ref, watchEffect } from "vue";
 import { useQuasar, QSpinnerFacebook } from "quasar";
 import { useAuthStore } from "../../../stores/auth-store";
 import { useSolicitudesRFStore } from "src/stores/solicitudes-rf-store";
 import { storeToRefs } from "pinia";
+import { useConfiguracionStore } from "src/stores/configuracion-store";
 import TablaComp from "../components/TablaComp.vue";
 import ModalComp from "../components/ModalComp.vue";
 import ModalPago from "../components/ModalPago.vue";
@@ -142,19 +163,41 @@ import ModalFacturas from "../components/ModalFacturas.vue";
 const $q = useQuasar();
 const solicitudesRFStore = useSolicitudesRFStore();
 const authStore = useAuthStore();
+const configuracionStore = useConfiguracionStore();
 const { modulo } = storeToRefs(authStore);
-const { list_Solicitudes_RF, list_Solictudes_Aprobadas_RF } =
-  storeToRefs(solicitudesRFStore);
+const { list_Areas } = storeToRefs(configuracionStore);
+const {
+  list_Solicitudes_RF,
+  list_Solictudes_Aprobadas_RF,
+  list_Solicitudes_RF_Filtro,
+  list_Solictudes_Aprobadas_RF_Filtro,
+} = storeToRefs(solicitudesRFStore);
 const tab = ref("pendientes");
 const siglas = "SOLIC-RF";
+const area_Id = ref({ value: 0, label: "Todos" });
+const today = new Date();
+const año = ref(today.getFullYear());
+const years = ref(["Todos", 2023, 2024]);
+const list_Areas_Filtro = ref([]);
 
 //-----------------------------------------------------------
 
 onBeforeMount(() => {
   leerPermisos();
+  cargarData();
 });
 
 //-----------------------------------------------------------
+
+const cargarData = async () => {
+  await configuracionStore.load_Areas();
+  let list = list_Areas.value;
+  list.splice(0, 0, {
+    value: 0,
+    label: "Todos",
+  });
+  list_Areas_Filtro.value = list;
+};
 
 const leerPermisos = async () => {
   $q.loading.show({
@@ -168,4 +211,56 @@ const leerPermisos = async () => {
   await authStore.loadModulo(siglas);
   $q.loading.hide();
 };
+
+const filtrarPendientes = (list_Pendientes, filtro) => {
+  list_Solicitudes_RF_Filtro.value = list_Pendientes.filter((item) => {
+    let cumple = true;
+    if (filtro.año !== undefined) {
+      let añoSolicitud = parseInt(item.fecha_Registro.split("-")[0]);
+      if (filtro.año == "Todos") {
+        cumple = cumple && añoSolicitud === añoSolicitud;
+      } else {
+        cumple = cumple && añoSolicitud === filtro.año;
+      }
+    }
+    if (filtro.area !== undefined) {
+      if (filtro.area == 0) {
+        cumple = cumple && item.area_Id === item.area_Id;
+      } else {
+        cumple = cumple && item.area_Id === filtro.area;
+      }
+    }
+    return cumple;
+  });
+};
+
+const filtrarAprobadas = (list_Aprobadas, filtro) => {
+  list_Solictudes_Aprobadas_RF_Filtro.value = list_Aprobadas.filter((item) => {
+    let cumple = true;
+    if (filtro.año !== undefined) {
+      let añoSolicitud = parseInt(item.fecha_Registro.split("-")[0]);
+      if (filtro.año == "Todos") {
+        cumple = cumple && añoSolicitud === añoSolicitud;
+      } else {
+        cumple = cumple && añoSolicitud === filtro.año;
+      }
+    }
+    if (filtro.area !== undefined) {
+      if (filtro.area == 0) {
+        cumple = cumple && item.area_Id === item.area_Id;
+      } else {
+        cumple = cumple && item.area_Id === filtro.area;
+      }
+    }
+    return cumple;
+  });
+};
+
+watchEffect(() => {
+  const filtro = {};
+  if (año.value != null) filtro.año = año.value;
+  if (area_Id.value != null) filtro.area = parseInt(area_Id.value.value);
+  filtrarPendientes(list_Solicitudes_RF.value, filtro);
+  filtrarAprobadas(list_Solictudes_Aprobadas_RF.value, filtro);
+});
 </script>

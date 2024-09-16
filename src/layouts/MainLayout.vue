@@ -19,6 +19,11 @@
           }}</q-badge>
           <q-menu>
             <q-list style="min-width: 100px">
+              <div
+                class="q-pl-md q-pt-sm q-pb-sm q-pr-md text-bold text-h6 text-grey-9"
+              >
+                Notificaciones
+              </div>
               <div>
                 <q-item
                   style="max-width: 420px"
@@ -26,12 +31,12 @@
                   :key="notificacion.id"
                   clickable
                   v-ripple
-                  @click="toSolicitudes(notificacion.id, notificacion.tipo)"
+                  @click="detalle(notificacion)"
                 >
                   <q-item-section>
                     <q-item-label>{{ notificacion.titulo }}</q-item-label>
                     <q-item-label caption lines="3"
-                      >{{ notificacion.descripcion }}
+                      >{{ notificacion.mensaje }}
                     </q-item-label>
                   </q-item-section>
 
@@ -48,17 +53,27 @@
               </div>
               <q-card
                 v-if="notificaciones.length > 0"
-                class="text-center no-shadow no-border"
+                class="text-center no-shadow no-border q-pa-sm"
               >
                 <q-btn
+                  label="Marcar todo como leido"
+                  color="purple-ieen"
+                  flat
+                  class="text-indigo-8"
+                  @click="marcarLeido"
+                ></q-btn>
+                <q-btn
+                  flat
                   label="Ver todos"
                   color="purple-ieen"
-                  style="max-width: 120px !important"
-                  flat
-                  dense
                   class="text-indigo-8"
                   @click="toNotificaciones"
                 ></q-btn>
+              </q-card>
+              <q-card class="text-center no-shadow no-border q-pa-sm" v-else>
+                <div class="text-indigo-8 text-purple-ieen">
+                  Sin notificaciones
+                </div>
               </q-card>
             </q-list>
           </q-menu>
@@ -212,16 +227,8 @@ import { EncryptStorage } from "storage-encryption";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { useNotificacionStore } from "../stores/notificaciones-store";
 import { useMisSolicitudesStore } from "src/stores/mis-solicitudes-store";
+import { useNotifications } from "../helpers/signalRService";
 
-//----------------------------------------------------------
-
-function handleClick(e) {
-  if (!document.startViewTransition) {
-    updateTheDOMSomehow();
-    return;
-  }
-  document.startViewTransition(() => updateTheDOMSomehow());
-}
 //----------------------------------------------------------
 
 const leftDrawerOpen = ref(false);
@@ -232,11 +239,11 @@ const router = useRouter();
 const notificacionStore = useNotificacionStore();
 const misSolictudesStore = useMisSolicitudesStore();
 const encryptStorage = new EncryptStorage("SECRET_KEY", "sessionStorage");
+const { startConnection, onReceiveNotification, onLine } = useNotifications();
 const { notificaciones, no_notificaciones } = storeToRefs(notificacionStore);
 const { modulos, sistemas, apps, usuario_Nombre } = storeToRefs(authStore);
 const modo = ref(false);
 const catalagosList = ref([]);
-const onLine = ref(false);
 const usuario = ref("");
 const userName = ref("");
 const Empleado = ref(null);
@@ -266,6 +273,8 @@ onBeforeMount(async () => {
     );
     $q.loading.hide();
     if (resp.success == false) {
+      localStorage.clear();
+      sessionStorage.clear();
       encryptStorage.remove("key");
       window.location = "http://sistema.ieenayarit.org:9271?return=false";
     }
@@ -293,45 +302,51 @@ onBeforeMount(async () => {
   }
   Empleado.value = encryptStorage.decrypt("empleado");
   await loadMenu();
-  notificacionStore.loadNotificaciones();
+  await notificacionStore.loadNotificaciones();
+  await notificacionStore.loadNotificacionesAll();
+  conectar_signalr();
 });
 
-onMounted(() => {
-  const connection = new HubConnectionBuilder()
-    //https://localhost:7289/hubGastos
-    //http://sistema.ieenayarit.org:9170/hubGastos
-    //http://sistema.ieenayarit.org:9270/hubGastos
-    .withUrl("http://sistema.ieenayarit.org:9270/hubGastos", {
-      // accessTokenFactory: () => localStorage.getItem("key"),
-      headers: {
-        Authorization: `Bearer ${encryptStorage.decrypt("key")}`,
-      },
-    })
-    .configureLogging(LogLevel.Information)
-    .build();
-  connection
-    .start()
-    .then(() => {
-      onLine.value = true;
-    })
-    .catch((err) => {
-      onLine.value = false;
-    });
-  connection.on("notificar", (data) => {
-    notificacionStore.loadNotificaciones();
-    notificacionStore.loadNotificacionesAll();
-    misSolictudesStore.load_Mis_Solicitudes();
-    $q.notify({
-      message: data,
-      icon: "announcement",
-    });
-  });
-});
+const conectar_signalr = async () => {
+  await startConnection();
+  onReceiveNotification();
+};
+
+// onMounted(() => {
+//   const connection = new HubConnectionBuilder()
+//     //https://localhost:7289/hubGastos
+//     //http://sistema.ieenayarit.org:9170/hubGastos
+//     //http://sistema.ieenayarit.org:9270/hubGastos
+//     .withUrl("http://sistema.ieenayarit.org:9270/hubGastos", {
+//       // accessTokenFactory: () => localStorage.getItem("key"),
+//       headers: {
+//         Authorization: `Bearer ${encryptStorage.decrypt("key")}`,
+//       },
+//     })
+//     .configureLogging(LogLevel.Information)
+//     .build();
+//   connection
+//     .start()
+//     .then(() => {
+//       onLine.value = true;
+//     })
+//     .catch((err) => {
+//       onLine.value = false;
+//     });
+//   connection.on("notificar", (data) => {
+//     notificacionStore.loadNotificaciones();
+//     notificacionStore.loadNotificacionesAll();
+//     misSolictudesStore.load_Mis_Solicitudes();
+//     $q.notify({
+//       message: data,
+//       icon: "announcement",
+//     });
+//   });
+// });
 
 //----------------------------------------------------------
 
 const loadMenu = async () => {
-  handleClick();
   $q.loading.show({
     spinner: QSpinnerFacebook,
     spinnerColor: "purple-ieen",
@@ -371,7 +386,7 @@ const toNotificaciones = () => {
   });
 };
 
-const toSolicitudes = async (id, tipo) => {
+const detalle = async (row) => {
   $q.loading.show({
     spinner: QSpinnerFacebook,
     spinnerColor: "purple-ieen",
@@ -380,23 +395,23 @@ const toSolicitudes = async (id, tipo) => {
     message: "Espere un momento, por favor...",
     messageColor: "black",
   });
-  await notificacionStore.leerNotificacion(id);
-  $q.loading.hide();
-  let name = null;
-  switch (tipo) {
-    case 1:
-      name = "misSolicitudes";
-      break;
-    case 2:
-      name = "solicitudesArea";
-      break;
-    case 3:
-      name = "solicitudesRecFinancieros";
-      break;
+  let resp = await notificacionStore.leerNotificacion(row.id);
+  if (resp.success == true) {
+    await notificacionStore.loadNotificaciones();
   }
-  router.push({
-    name: name,
-  });
+  let url = sistemas.value.find((x) => x.value == row.sistema_Id);
+  if (url.label == "Gastos a Comprobar") {
+    router.push({
+      name: "misSolicitudes",
+    });
+  } else {
+    window.location =
+      url.url +
+      `/#/?key=${encryptStorage.decrypt("key")}&sistema=${
+        row.sistema_Id
+      }&usr=${encryptStorage.decrypt("usuario")}`;
+  }
+  $q.loading.hide();
 };
 
 const show = () => {
@@ -407,6 +422,8 @@ const show = () => {
   }).onOk((action) => {
     if (action.label == "Cerrar sesión") {
       localStorage.clear();
+      sessionStorage.clear();
+      encryptStorage.remove("key");
       window.location = "http://sistema.ieenayarit.org:9271?return=false";
     } else if (action.label == "Ir a universo") {
       window.location = "http://sistema.ieenayarit.org:9271?return=true";
@@ -419,37 +436,43 @@ const show = () => {
     }
   });
 };
+
+const marcarLeido = async () => {
+  let resp = await notificacionStore.leerTodas();
+  if (resp.success) {
+    $q.notify({
+      position: "top-right",
+      type: "positive",
+      message: resp.data,
+      actions: [
+        {
+          icon: "close",
+          color: "white",
+          round: true,
+          handler: () => {},
+        },
+      ],
+    });
+    await notificacionStore.loadNotificaciones();
+    await notificacionStore.loadNotificacionesAll();
+  } else {
+    $q.notify({
+      position: "top-right",
+      type: "negative",
+      message: resp.data,
+      actions: [
+        {
+          icon: "close",
+          color: "white",
+          round: true,
+          handler: () => {},
+        },
+      ],
+    });
+  }
+};
 </script>
 <style lang="scss">
-::view-transition-group(root) {
-  animation-timing-function: var(--expo-in);
-}
-
-::view-transition-new(root) {
-  mask: url("https://media.tenor.com/Jz0aSpk9VIQAAAAi/i-love-you-love.gif")
-    center / 0 no-repeat;
-  animation: scale 1.5s;
-}
-
-::view-transition-old(root),
-.dark::view-transition-old(root) {
-  animation: scale 1.5s;
-}
-
-@keyframes scale {
-  0% {
-    mask-size: 0;
-  }
-  10% {
-    mask-size: 50vmax;
-  }
-  90% {
-    mask-size: 50vmax;
-  }
-  100% {
-    mask-size: 2000vmax;
-  }
-}
 .text-purple-ieen {
   color: #673e84 !important;
 }

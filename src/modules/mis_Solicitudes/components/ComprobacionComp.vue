@@ -9,6 +9,7 @@
         row-key="id"
         rows-per-page-label="Filas por pagina"
         no-data-label="No hay registros"
+        :rows-per-page-options="[5, 15, 20, 25, 50]"
       >
         <template v-slot:top-right>
           <q-input
@@ -28,7 +29,6 @@
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
               <div v-if="col.name === 'id'">
                 <q-btn
-                  v-if="solicitud.fecha_Pago != 'Sin registro'"
                   flat
                   round
                   color="purple-ieen"
@@ -38,6 +38,9 @@
                   <q-tooltip>Ver</q-tooltip>
                 </q-btn>
               </div>
+              <label v-else-if="col.name == 'importe'"
+                >${{ col.value.toFixed(2) }}</label
+              >
               <label v-else>{{ col.value }}</label>
             </q-td>
           </q-tr>

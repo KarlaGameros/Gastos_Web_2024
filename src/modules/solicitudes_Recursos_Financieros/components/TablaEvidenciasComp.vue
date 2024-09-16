@@ -5,6 +5,7 @@
       :columns="columns"
       :filter="filter"
       :pagination="pagination"
+      :rows-per-page-options="[5, 15, 20, 25, 50]"
       row-key="id"
       rows-per-page-label="Filas por pagina"
       no-data-label="No hay registros"
@@ -82,7 +83,7 @@ const columns = [
   {
     name: "descripcion",
     align: "center",
-    label: "Descrición",
+    label: "Descripción",
     field: "descripcion",
     sortable: true,
   },

@@ -28,11 +28,89 @@
           perfil_RF == false
         "
       >
-        <q-form class="row q-col-gutter-xs" @submit="onSubmit" ref="myForm">
+        <q-form class="row q-col-gutter-md" @submit="onSubmit" ref="myForm">
+          <q-banner
+            v-if="tipo == 'factura'"
+            dense
+            inline-actions
+            rounded
+            class="bg-orange text-white col-12 q-ma-sm"
+          >
+            <template v-slot:avatar>
+              <q-icon name="warning" color="white" />
+            </template>
+            <div class="text-bold text-subtitle1">
+              Subir XML para lectura automática de datos
+            </div>
+          </q-banner>
+          <div class="col-lg-6 col-md-6 col-sm-12">
+            <div class="text-bold text-subtitle1">
+              Seleccione el tipo de comprobación:
+            </div>
+          </div>
+          <div class="col-lg-6 col-md-6 col-sm-12 text-bold text-center">
+            <q-radio
+              checked-icon="task_alt"
+              unchecked-icon="panorama_fish_eye"
+              color="purple-ieen"
+              left-label
+              v-model="tipo"
+              val="factura"
+              label="Factura"
+            />
+            <q-radio
+              checked-icon="task_alt"
+              unchecked-icon="panorama_fish_eye"
+              color="purple-ieen"
+              left-label
+              v-model="tipo"
+              val="recibo"
+              label="Recibo"
+            />
+          </div>
+          <div class="col-lg-6 col-md-6 col-sm-12" v-if="tipo === 'factura'">
+            <q-file
+              id="myFileInput"
+              name="fileToUpload"
+              color="purple-ieen"
+              bottom-slots
+              v-model="xml"
+              label=""
+              counter
+              accept=".xml"
+              max-files="1"
+              lazy-rules
+              :rules="[(val) => !!val || 'El XML es requerido']"
+            >
+              <template v-slot:append>
+                <q-icon name="attachment" @click.stop />
+              </template>
+              <template v-slot:hint> XML </template>
+            </q-file>
+          </div>
+          <div class="col-lg-6 col-md-6 col-sm-12">
+            <q-file
+              id="file"
+              name="fileToUpload"
+              color="purple-ieen"
+              bottom-slots
+              v-model="comprobacion.pdf"
+              label=""
+              counter
+              accept=".pdf"
+              max-files="1"
+              lazy-rules
+              :rules="[(val) => !!val || 'El PDF es requerido']"
+            >
+              <template v-slot:append>
+                <q-icon name="attachment" @click.stop />
+              </template>
+              <template v-slot:hint> PDF </template>
+            </q-file>
+          </div>
           <div class="col-lg-6 col-md-6 col-sm-12">
             <q-input
               color="purple-ieen"
-              filled
               v-model="comprobacion.fecha_Comprobante"
               ref="fecha_ref"
               stack-label
@@ -48,7 +126,6 @@
           <div class="col-lg-6 col-md-6 col-sm-12">
             <q-input
               color="purple-ieen"
-              filled
               v-model="comprobacion.folio"
               ref="folio_ref"
               label="Folio"
@@ -62,7 +139,6 @@
           <div class="col-lg-6 col-md-6 col-sm-12">
             <q-input
               color="purple-ieen"
-              filled
               v-model="comprobacion.emisor"
               ref="emisor_ref"
               label="Emisor"
@@ -76,7 +152,6 @@
           <div class="col-lg-6 col-md-6 col-sm-12">
             <q-input
               color="purple-ieen"
-              filled
               prefix="$"
               v-model="comprobacion.importe"
               type="number"
@@ -89,42 +164,6 @@
               ]"
             />
           </div>
-          <div class="col-lg-6 col-md-6 col-sm-12">
-            <q-file
-              color="purple-ieen"
-              filled
-              outlined
-              bottom-slots
-              v-model="comprobacion.pdf"
-              label=""
-              counter
-              accept=".pdf"
-              max-files="1"
-            >
-              <template v-slot:append>
-                <q-icon name="attachment" @click.stop />
-              </template>
-              <template v-slot:hint> PDF </template>
-            </q-file>
-          </div>
-          <div class="col-lg-6 col-md-6 col-sm-12">
-            <q-file
-              color="purple-ieen"
-              filled
-              outlined
-              bottom-slots
-              v-model="comprobacion.xml"
-              label=""
-              counter
-              accept=".xml"
-              max-files="1"
-            >
-              <template v-slot:append>
-                <q-icon name="attachment" @click.stop />
-              </template>
-              <template v-slot:hint> XML </template>
-            </q-file>
-          </div>
           <div class="col-12 justify-end q-pt-lg">
             <div class="text-right q-gutter-xs">
               <q-btn
@@ -135,11 +174,10 @@
               />
               <q-btn
                 :loading="loading"
-                type="button"
+                type="submit"
                 color="secondary"
                 label="Guardar"
                 icon="save"
-                @click="onSubmit"
               >
                 <template v-slot:loading>
                   <q-spinner-hourglass class="on-left" />
@@ -161,6 +199,8 @@
             row-key="id"
             rows-per-page-label="Filas por pagina"
             no-data-label="No hay registros"
+            class="my-sticky-last-column-table"
+            :rows-per-page-options="[5, 15, 20, 25, 50]"
           >
             <template v-slot:top-right>
               <q-input
@@ -179,6 +219,15 @@
               <q-tr :props="props">
                 <q-td v-for="col in props.cols" :key="col.name" :props="props">
                   <div v-if="col.name === 'id'">
+                    <q-btn
+                      flat
+                      round
+                      color="purple-ieen"
+                      icon="visibility"
+                      @click="verPDF(props.row.pdF_Url)"
+                    >
+                      <q-tooltip>Ver pdf</q-tooltip>
+                    </q-btn>
                     <q-btn
                       v-if="solicitud.estatus != 'Concluido'"
                       flat
@@ -207,7 +256,7 @@ import { useComprobarStore } from "src/stores/comprobar-store";
 import { useDistribucionStore } from "src/stores/distribuciones-store";
 import { useMisSolicitudesStore } from "src/stores/mis-solicitudes-store";
 import { useSolicitudesRFStore } from "src/stores/solicitudes-rf-store";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 //-----------------------------------------------------------
 
@@ -225,10 +274,49 @@ const fecha_ref = ref(null);
 const folio_ref = ref(null);
 const emisor_ref = ref(null);
 const importe_ref = ref(null);
+const xml = ref(null);
+const tipo = ref("factura");
 
 //-----------------------------------------------------------
 
+watch(xml, (val) => {
+  if (val != null) {
+    cargarXML();
+  }
+});
+
+//-----------------------------------------------------------
+
+const cargarXML = async () => {
+  const bodyFormData = new FormData();
+  bodyFormData.append("XML", xml.value);
+  let resp = await comprobarStore.leer_XML(bodyFormData);
+  if (resp.repetido == true) {
+    xml.value = null;
+    $q.notify({
+      position: "center",
+      type: "warning",
+      message: resp.data,
+    });
+  }
+};
+
+const verPDF = (pdf) => {
+  $q.dialog({
+    title: "Ver PDF",
+    style: "width: 800px; max-width: 80vw",
+    message: `<iframe
+            src="${pdf}"
+            width="100%"
+            height="650"
+          ></iframe>`,
+    html: true,
+    ok: "Cerrar",
+  });
+};
+
 const actualizarModal = () => {
+  limpiar();
   comprobarStore.actualizarModalFactura(false);
 };
 
@@ -237,6 +325,7 @@ const limpiar = () => {
   folio_ref.value.resetValidation();
   emisor_ref.value.resetValidation();
   importe_ref.value.resetValidation();
+  xml.value = null;
   comprobarStore.initComprobacion();
 };
 
@@ -306,17 +395,17 @@ const onSubmit = async () => {
   bodyFormData.append("Folio", comprobacion.value.folio);
   bodyFormData.append("Importe", comprobacion.value.importe);
   bodyFormData.append("PDF", comprobacion.value.pdf);
-  bodyFormData.append("XML", comprobacion.value.xml);
+  bodyFormData.append("XML", xml.value);
   const resp = await comprobarStore.create_Comprobacion(
     distribucion.value.id,
     bodyFormData
   );
   if (resp.success == true) {
+    limpiar();
     await misSolicitudesStore.load_Solicitud(solicitud.value.id);
     await distribucionStore.load_Distribuciones(solicitud.value.id);
     await comprobarStore.loadComprobaciones(distribucion.value.id);
     await distribucionStore.load_Distribucion_Id(distribucion.value.id);
-    limpiar();
     $q.notify({
       type: "positive",
       message: resp.data,
@@ -379,3 +468,17 @@ const pagination = ref({
 
 const filter = ref("");
 </script>
+<style lang="sass">
+.my-sticky-last-column-table
+  thead tr:last-child th:last-child
+    background-color: white
+
+  td:last-child
+    background-color: white
+
+  th:last-child,
+  td:last-child
+    position: sticky
+    right: 0
+    z-index: 1
+</style>

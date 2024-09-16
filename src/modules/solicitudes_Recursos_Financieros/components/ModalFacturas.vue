@@ -29,10 +29,21 @@
             :filter="filter"
             :loading="loading"
             :pagination="pagination"
+            :rows-per-page-options="[5, 15, 20, 25, 50]"
             row-key="id"
             rows-per-page-label="Filas por pagina"
             no-data-label="No hay registros"
+            class="my-sticky-last-column-table"
           >
+            <template v-if="list_Comprobaciones.length > 0" v-slot:top-left>
+              <q-btn
+                label="Descargar comprobantes"
+                outline
+                color="purple-ieen"
+                icon-right="sim_card_download"
+                @click="descargarComprobantes(list_Comprobaciones[0].id)"
+              />
+            </template>
             <template v-slot:top-right>
               <q-input
                 borderless
@@ -51,14 +62,13 @@
                 <q-td v-for="col in props.cols" :key="col.name" :props="props">
                   <div v-if="col.name === 'id'">
                     <q-btn
-                      v-if="props.row.xml == 'Si' || props.row.pdf == 'Si'"
                       flat
                       round
                       color="purple-ieen"
-                      icon="sim_card_download"
-                      @click="descargarComprobantes(col.value, props.row.folio)"
+                      icon="visibility"
+                      @click="verPDF(props.row.pdF_Url)"
                     >
-                      <q-tooltip>Descargar comprobantes</q-tooltip>
+                      <q-tooltip>Ver pdf</q-tooltip>
                     </q-btn>
                   </div>
                   <label v-else>{{ col.value }}</label>
@@ -108,7 +118,21 @@ const limpiar = () => {
   comprobarStore.initComprobacion();
 };
 
-const descargarComprobantes = async (id, folio) => {
+const verPDF = (pdf) => {
+  $q.dialog({
+    title: "Ver PDF",
+    style: "width: 800px; max-width: 80vw",
+    message: `<iframe
+            src="${pdf}"
+            width="100%"
+            height="650"
+          ></iframe>`,
+    html: true,
+    ok: "Cerrar",
+  });
+};
+
+const descargarComprobantes = async (id) => {
   try {
     $q.loading.show({
       spinner: QSpinnerFacebook,
@@ -128,7 +152,7 @@ const descargarComprobantes = async (id, folio) => {
     const adjunto = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = adjunto;
-    link.setAttribute("download", folio);
+    link.setAttribute("download", solicitud.value.folio);
     document.body.appendChild(link);
     link.click();
     $q.loading.hide();
@@ -237,3 +261,17 @@ const pagination = ref({
 
 const filter = ref("");
 </script>
+<style lang="sass">
+.my-sticky-last-column-table
+  thead tr:last-child th:last-child
+    background-color: white
+
+  td:last-child
+    background-color: white
+
+  th:last-child,
+  td:last-child
+    position: sticky
+    right: 0
+    z-index: 1
+</style>

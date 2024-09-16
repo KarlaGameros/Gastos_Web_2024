@@ -7,6 +7,8 @@
         :filter="filter"
         :pagination="pagination"
         :loading="is_loading"
+        :visible-columns="columns_visible"
+        :rows-per-page-options="[5, 15, 20, 25, 50]"
         row-key="id"
         rows-per-page-label="Filas por pagina"
         no-data-label="No hay registros"
@@ -14,7 +16,13 @@
       >
         <template v-slot:top-left>
           <div class="text-h6 text-bold text-purple-ieen">
-            Solicitudes del año: {{ yearFiltro }}
+            {{
+              buscar_Por == "año"
+                ? `Solicitudes del año: ${yearFiltro}`
+                : `Solicitudes por rango de fecha: ${
+                    textoFecha == null ? "" : textoFecha
+                  }`
+            }}
           </div>
         </template>
         <template v-slot:top-right>
@@ -90,6 +98,15 @@
                   />
                 </q-badge>
               </div>
+              <label
+                v-else-if="
+                  col.name == 'monto_Asignado' ||
+                  col.name == 'monto_Utilizado' ||
+                  col.name == 'monto_Reintegro' ||
+                  col.name == 'saldo'
+                "
+                >${{ col.value }}</label
+              >
               <label v-else>{{ col.value }}</label>
             </q-td>
           </q-tr>
@@ -101,7 +118,7 @@
 <script setup>
 import { useQuasar, QSpinnerFacebook, exportFile } from "quasar";
 import { storeToRefs } from "pinia";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useDashboardStore } from "../../../stores/dashboard-store";
 import { useDistribucionStore } from "../../../stores/distribuciones-store";
 import { useMisSolicitudesStore } from "src/stores/mis-solicitudes-store";
@@ -116,8 +133,24 @@ const misSolictudesStore = useMisSolicitudesStore();
 const distribucionStore = useDistribucionStore();
 const comprobacionStore = useComprobarStore();
 const solicitudesRFStore = useSolicitudesRFStore();
-const { solicitudes_filtro, is_loading, yearFiltro } =
+const { solicitudes_filtro, is_loading, yearFiltro, textoFecha } =
   storeToRefs(dasboardStore);
+const props = defineProps({
+  buscar_Por: { type: String },
+});
+const columns_visible = ref([
+  "folio",
+  "estatus",
+  "area",
+  "empleado_Solicitante",
+  "fecha_Salida",
+  "fecha_LLegada",
+  "monto_Asignado",
+  "monto_Utilizado",
+  "monto_Reintegro",
+  "saldo",
+  "id",
+]);
 
 //-----------------------------------------------------------
 
@@ -240,7 +273,7 @@ const columns = [
   {
     name: "monto_Asignado",
     align: "center",
-    label: "Monto erogado",
+    label: "Monto asignado",
     field: "monto_Asignado",
     sortable: true,
   },
@@ -263,6 +296,13 @@ const columns = [
     align: "center",
     label: "Saldo",
     field: "saldo",
+    sortable: true,
+  },
+  {
+    name: "actividad",
+    align: "center",
+    label: "Actividad",
+    field: "actividad",
     sortable: true,
   },
   {

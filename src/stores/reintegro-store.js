@@ -83,6 +83,7 @@ export const useReintegroStore = defineStore("useReintegroStore", {
             this.reintegro.devolucion_Content_Type =
               data.devolucion_Content_Type;
             this.reintegro.solicitud_Id = data.solicitud_Id;
+            return { success };
           } else {
             return { success, data };
           }

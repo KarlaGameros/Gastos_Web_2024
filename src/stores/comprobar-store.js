@@ -20,6 +20,7 @@ export const useComprobarStore = defineStore("useComprobarStore", {
       fecha_Comprobante: null,
       pdf: null,
       xml: null,
+      rfC_Receptor: null,
     },
     informe: {
       id: null,
@@ -122,6 +123,7 @@ export const useComprobarStore = defineStore("useComprobarStore", {
                   fecha_Comprobante: element.fecha_Comprobante,
                   pdf: element.pdf == true ? "Si" : "No",
                   xml: element.xml == true ? "Si" : "No",
+                  pdF_Url: element.pdF_Url,
                 };
               });
             }
@@ -392,6 +394,46 @@ export const useComprobarStore = defineStore("useComprobarStore", {
             return { success, data };
           } else {
             return { success, data };
+          }
+        } else {
+          return {
+            success: false,
+            data: "Ocurrió un error, inténtelo de nuevo. Si el error persiste, contacte a soporte",
+          };
+        }
+      } catch (error) {
+        return {
+          success: false,
+          data: "Ocurrió un error, inténtelo de nuevo. Si el error persiste, contacte a soporte",
+        };
+      }
+    },
+
+    //-----------------------------------------------------------
+    //LEER XML
+    async leer_XML(xml) {
+      try {
+        const resp = await api.post("/LectorXML", xml, {
+          headers: {
+            "Conten-Type": "multipart/form-data",
+          },
+        });
+        if (resp.status == 200) {
+          const { success, data, repetido } = resp.data;
+          if (data != null) {
+            if (success === true && repetido == false) {
+              let fecha = data.fecha_Comprobante.split("T")[0].split("-");
+              this.comprobacion.fecha_Comprobante = `${fecha[0]}-${fecha[1]}-${fecha[2]}`;
+              this.comprobacion.folio = data.folio;
+              this.comprobacion.emisor = data.emisor;
+              this.comprobacion.importe = data.importe;
+              this.comprobacion.rfC_Receptor = data.rfC_Receptor;
+              return { success, data, repetido };
+            } else if (repetido == true) {
+              return { success, data, repetido };
+            } else {
+              return { success, data, repetido };
+            }
           }
         } else {
           return {

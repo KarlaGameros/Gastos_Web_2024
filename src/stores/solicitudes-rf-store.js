@@ -12,6 +12,8 @@ export const useSolicitudesRFStore = defineStore("useSolicitudesRFStore", {
     archivo_Reintegro: false,
     list_Solicitudes_RF: [],
     list_Solictudes_Aprobadas_RF: [],
+    list_Solicitudes_RF_Filtro: [],
+    list_Solictudes_Aprobadas_RF_Filtro: [],
     list_Formas_Pago: [],
     solicitudRF: {
       id: null,
@@ -199,6 +201,7 @@ export const useSolicitudesRFStore = defineStore("useSolicitudesRFStore", {
                 return {
                   id: solicitud.id,
                   folio: solicitud.folio,
+                  area_Id: solicitud.area_Id,
                   empleado_Registra_Id: solicitud.empleado_Registra_Id,
                   empleado_Registra: solicitud.empleado_Registra,
                   empleado_Solicitante_Id: solicitud.empleado_Solicitante_Id,
@@ -224,6 +227,12 @@ export const useSolicitudesRFStore = defineStore("useSolicitudesRFStore", {
                   monto_Saldo: `$${solicitud.monto_Saldo.toFixed(2)}`,
                   fecha_Registro: solicitud.fecha_Registro,
                   destino: solicitud.destino,
+                  destino_Corto:
+                    solicitud.destino.length >= 30
+                      ? solicitud.destino.slice(0, 30) + "..."
+                      : solicitud.destino == null
+                      ? ""
+                      : solicitud.destino,
                   fecha_Pago: solicitud.fecha_Pago,
                 };
               });
@@ -316,6 +325,7 @@ export const useSolicitudesRFStore = defineStore("useSolicitudesRFStore", {
                 return {
                   id: solicitud.id,
                   folio: solicitud.folio,
+                  area_Id: solicitud.area_Id,
                   pernoctado: solicitud.pernoctado,
                   empleado_Registra_Id: solicitud.empleado_Registra_Id,
                   empleado_Registra: solicitud.empleado_Registra,
@@ -340,8 +350,15 @@ export const useSolicitudesRFStore = defineStore("useSolicitudesRFStore", {
                   monto_Asignado: `$${solicitud.monto_Asignado.toFixed(2)}`,
                   monto_Utilizado: `$${solicitud.monto_Utilizado.toFixed(2)}`,
                   monto_Saldo: `$${solicitud.monto_Saldo.toFixed(2)}`,
+                  monto_Reintegro: `$${solicitud.monto_Reintegro.toFixed(2)}`,
                   fecha_Registro: solicitud.fecha_Registro,
                   destino: solicitud.destino,
+                  destino_Corto:
+                    solicitud.destino.length >= 30
+                      ? solicitud.destino.slice(0, 30) + "..."
+                      : solicitud.destino == null
+                      ? ""
+                      : solicitud.destino,
                   pagado: solicitud.pagado,
                   fecha_Pago: solicitud.fecha_Pago,
                   e_Reintegro: solicitud.e_Reintegro,

@@ -9,7 +9,7 @@ import axios from "axios";
 // "export default () => {}" function below (which runs individually
 // for each client)
 const encryptStorage = new EncryptStorage("SECRET_KEY", "sessionStorage");
-const api = axios.create({ baseURL: "http://sistema.ieenayarit.org:9170/api" });
+const api = axios.create({ baseURL: "http://sistema.ieenayarit.org:9270/api" });
 // const api = axios.create({
 //   baseURL: "https://xdxd2lf8-7289.usw3.devtunnels.ms/api",
 // });
@@ -26,7 +26,9 @@ api.interceptors.response.use(
   (error) => {
     if (error.response.status == 401) {
       alert("Su sesión ha expirado, sera redireccionado al logín");
+      localStorage.clear();
       sessionStorage.clear();
+      encryptStorage.remove("key");
       window.location = "http://sistema.ieenayarit.org:9271";
     }
     return Promise.reject();

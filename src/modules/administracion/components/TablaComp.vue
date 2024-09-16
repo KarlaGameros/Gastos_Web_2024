@@ -24,6 +24,7 @@
     :filter="filter"
     :loading="loading"
     :pagination="pagination"
+    :rows-per-page-options="[5, 15, 20, 25, 50]"
     row-key="id"
     rows-per-page-label="Filas por pagina"
     no-data-label="No hay registros"
@@ -167,27 +168,22 @@
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "../../../stores/auth-store";
 import { useQuasar, QSpinnerFacebook, exportFile } from "quasar";
-import { onBeforeMount, ref } from "vue";
+import { ref } from "vue";
 import { useAdministracionStore } from "../../../stores/administracion-store";
 import { useMisSolicitudesStore } from "src/stores/mis-solicitudes-store";
-import { useSolicitudesRFStore } from "src/stores/solicitudes-rf-store";
 import { useDistribucionStore } from "src/stores/distribuciones-store";
-import Swal from "sweetalert2";
 
 //-----------------------------------------------------------
 
 const $q = useQuasar();
 const administracionStore = useAdministracionStore();
 const misSolicitudesStore = useMisSolicitudesStore();
-const solicitudesRFStore = useSolicitudesRFStore();
 const distribucionStore = useDistribucionStore();
-const { solicitud } = storeToRefs(misSolicitudesStore);
 const {
   list_Pendientes_Administracion,
   list_Pendientes_Firmas,
   list_Recibidas_Administracion,
   loading,
-  pendiente_Firma,
 } = storeToRefs(administracionStore);
 const siglas = "SOLIC-ADMON";
 const authStore = useAuthStore();
@@ -200,41 +196,6 @@ const propsPage = defineProps({
 });
 
 //-----------------------------------------------------------
-
-onBeforeMount(() => {
-  leerPermisos();
-  cargarData();
-});
-
-//-----------------------------------------------------------
-
-const leerPermisos = async () => {
-  $q.loading.show({
-    spinner: QSpinnerFacebook,
-    spinnerColor: "purple-ieen",
-    spinnerSize: 140,
-    backgroundColor: "purple-3",
-    message: "Espere un momento, por favor...",
-    messageColor: "black",
-  });
-  await authStore.loadModulo(siglas);
-  $q.loading.hide();
-};
-
-const cargarData = async () => {
-  $q.loading.show({
-    spinner: QSpinnerFacebook,
-    spinnerColor: "purple-ieen",
-    spinnerSize: 140,
-    backgroundColor: "purple-3",
-    message: "Espere un momento, por favor...",
-    messageColor: "black",
-  });
-  await administracionStore.load_Solicitudes_Administracion();
-  await administracionStore.load_Recibidas_Administracion();
-  await administracionStore.load_Pendientes_Firmas();
-  $q.loading.hide();
-};
 
 const verSolicitud = async (id) => {
   $q.loading.show({
@@ -417,13 +378,22 @@ const exportTable = () => {
   let list =
     propsPage.tipo == "pendientes"
       ? list_Pendientes_Administracion.value.filter(
-          (x) => x.aprobado_Recursos_Financieros == true
+          (x) =>
+            x.aprobado_Recursos_Financieros == true &&
+            x.estatus != "Pendiente" &&
+            x.estatus != "Cancelado" &&
+            x.estatus != "Rechazado por jefe de area"
         )
       : propsPage.tipo == "recibidas"
       ? list_Recibidas_Administracion.value.filter(
           (x) => x.estatus != "Recibido sin firmas"
         )
-      : list_Pendientes_Firmas.value;
+      : list_Pendientes_Firmas.value.filter(
+          (x) =>
+            x.estatus != "Cancelado" &&
+            x.estatus != "Pendiente" &&
+            x.estatus != "Rechazado por jefe de area"
+        );
 
   const content = [
     propsPage.tipo == 1

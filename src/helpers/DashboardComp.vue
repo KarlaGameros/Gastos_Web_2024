@@ -10,7 +10,7 @@
 <script setup>
 import { useQuasar } from "quasar";
 import { storeToRefs } from "pinia";
-import { onBeforeMount, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import { useDashboardStore } from "../stores/dashboard-store";
 
 //-----------------------------------------------------------
@@ -71,7 +71,7 @@ const pospes_options = ref({
 });
 const series = ref([
   {
-    name: "Monto erogado",
+    name: "Monto asignado",
     data: montos_Erogados.value,
     color: "#a25eb5",
   },

@@ -39,7 +39,7 @@
         </q-card-section>
       </div>
       <q-card-section>
-        <q-form class="row q-col-gutter-md" @submit="onSubmit" ref="myForm">
+        <q-form class="row q-col-gutter-md" @submit="onSubmit">
           <div class="col-12">
             <q-select
               :disable="
@@ -129,7 +129,7 @@
               counter
               :disable="visualizar"
               color="purple-ieen"
-              v-model="solicitud.actividad"
+              v-model.trim="solicitud.actividad"
               label="Actividad a realizar"
               hint="Describa la actividad que realizará"
               type="textarea"
@@ -154,7 +154,7 @@
               ]"
             >
               <template v-slot:prepend v-if="!visualizar">
-                <q-icon color="purple-ieen" name="event" class="cursor-pointer">
+                <q-icon name="event" class="cursor-pointer">
                   <q-popup-proxy
                     cover
                     transition-show="scale"
@@ -179,11 +179,7 @@
                 </q-icon>
               </template>
               <template v-slot:append v-if="!visualizar">
-                <q-icon
-                  color="purple-ieen"
-                  name="access_time"
-                  class="cursor-pointer"
-                >
+                <q-icon name="access_time" class="cursor-pointer">
                   <q-popup-proxy
                     cover
                     transition-show="scale"
@@ -223,7 +219,7 @@
               ]"
             >
               <template v-slot:prepend v-if="!visualizar">
-                <q-icon color="purple-ieen" name="event" class="cursor-pointer">
+                <q-icon name="event" class="cursor-pointer">
                   <q-popup-proxy
                     cover
                     transition-show="scale"
@@ -248,11 +244,7 @@
                 </q-icon>
               </template>
               <template v-slot:append v-if="!visualizar">
-                <q-icon
-                  color="purple-ieen"
-                  name="access_time"
-                  class="cursor-pointer"
-                >
+                <q-icon name="access_time" class="cursor-pointer">
                   <q-popup-proxy
                     cover
                     transition-show="scale"
@@ -456,7 +448,7 @@
           </div>
           <div class="col-lg-4 col-md-4 col-xs-12 text-center">
             <q-toggle
-              :disable="visualizar"
+              :disable="visualizar || solicitud.folio != null"
               checked-icon="check"
               unchecked-icon="clear"
               size="lg"
@@ -490,7 +482,7 @@
               class="text-bold"
               color="purple-ieen"
               :disable="visualizar"
-              v-model="solicitud.observaciones"
+              v-model.trim="solicitud.observaciones"
               label="Observaciones"
               hint="Ingrese observaciones que necesita que administración verifique"
               type="textarea"
@@ -501,7 +493,7 @@
               class="text-bold"
               color="purple-ieen"
               :disable="visualizar"
-              v-model="solicitud.gastos_Viaje"
+              v-model.trim="solicitud.gastos_Viaje"
               hint="Gastos de viaje"
               type="textarea"
               placeholder="Los viáticos y gastos de hospedaje serán asignados conforme a tabulador vigente. En caso de requerir gastos de viaje (transporte terrestre, transporte aéreo, traslados, gasolina, peajes, entre otros) favor de enlistar el tipo de gasto de viaje y el monto solicitado en este espacio."
@@ -512,48 +504,46 @@
               class="text-bold"
               color="purple-ieen"
               :disable="visualizar"
-              v-model="solicitud.itinerario"
+              v-model.trim="solicitud.itinerario"
               label="Itinerario"
               hint="En espacio para indicar el itinerario a seguir durante la comisión"
               type="textarea"
             />
           </div>
+          <br />
+          <div class="col-12 text-h5 text-purple-ieen text-bold text-center">
+            DESTINOS
+          </div>
+          <RegistroDestino class="col-12" />
+          <div class="flotanteFooter">
+            <q-card-section>
+              <div class="col-12 justify-end">
+                <div class="text-right q-gutter-xs">
+                  <q-btn
+                    color="red"
+                    label="Cerrar"
+                    @click="actualizarModal(false)"
+                    icon="close"
+                  />
+                  <q-btn
+                    v-if="!visualizar"
+                    :loading="loading"
+                    type="submit"
+                    color="secondary"
+                    label="Guardar"
+                    icon="save"
+                  >
+                    <template v-slot:loading>
+                      <q-spinner-hourglass class="on-left" />
+                      Cargando...
+                    </template>
+                  </q-btn>
+                </div>
+              </div>
+            </q-card-section>
+          </div>
         </q-form>
       </q-card-section>
-      <q-card-section>
-        <div class="col-12 text-h5 text-purple-ieen text-bold text-center">
-          DESTINOS
-        </div>
-        <RegistroDestino />
-      </q-card-section>
-      <div class="flotanteFooter">
-        <q-card-section>
-          <div class="col-12 justify-end">
-            <div class="text-right q-gutter-xs">
-              <q-btn
-                color="red"
-                label="Cerrar"
-                @click="actualizarModal(false)"
-                icon="close"
-              />
-              <q-btn
-                v-if="!visualizar"
-                :loading="loading"
-                type="submit"
-                color="secondary"
-                label="Guardar"
-                icon="save"
-                @click="onSubmit"
-              >
-                <template v-slot:loading>
-                  <q-spinner-hourglass class="on-left" />
-                  Cargando...
-                </template>
-              </q-btn>
-            </div>
-          </div>
-        </q-card-section>
-      </div>
     </q-card>
   </q-dialog>
 </template>
@@ -606,7 +596,6 @@ const medio_Terrestre = ref([
 const rol = ref(["Chofer", "Pasajero(a)"]);
 const check_habilitado = ref(false);
 const vehiculo_Id = ref(null);
-const myForm = ref(null);
 const loading = ref(false);
 const pernoctado = ref(false);
 
@@ -868,7 +857,6 @@ const actualizarModal = (valor) => {
 const onSubmit = async () => {
   const fecha1 = new Date(solicitud.value.fecha_Salida);
   const fecha2 = new Date(solicitud.value.fecha_LLegada);
-
   if (fecha2 < fecha1) {
     $q.notify({
       type: "warning",
@@ -876,12 +864,13 @@ const onSubmit = async () => {
     });
   } else {
     loading.value = true;
-    const valido = await myForm.value.validate();
     if (
       perfil.value == "Super Administrador" ||
       perfil.value == "Administrador"
     ) {
       solicitud.value.empleado_Solicitante_Id = solicitante_Id.value.value;
+      solicitud.value.puesto_Empleado_Solicitante_Id =
+        solicitante_Id.value.puesto_Id;
     }
     solicitud.value.area_Id = area_Id.value.value;
     solicitud.value.responsable_Area_Id = responsable_area.value.id;
@@ -897,69 +886,84 @@ const onSubmit = async () => {
       solicitud.value.vehiculo_Id = vehiculo_Id.value.value;
     }
     solicitud.value.destinos = list_Destinos.value;
-    if (valido == true) {
-      let resp = null;
-      if (is_Editar.value == false) {
-        if (list_Destinos.value.length == 0) {
-          $q.notify({
-            type: "warning",
-            message: "No ha agregado ningun destino",
-          });
-          loading.value = false;
-          return;
-        } else {
-          $q.loading.show({
-            spinner: QSpinnerFacebook,
-            spinnerColor: "purple-ieen",
-            spinnerSize: 140,
-            backgroundColor: "purple-3",
-            message: "Espere un momento, por favor...",
-            messageColor: "black",
-          });
-          resp = await misSolicitudesStore.create_Solicitud(solicitud.value);
-        }
+    if (solicitud.value.actividad != null) {
+      solicitud.value.actividad = solicitud.value.actividad.replace(
+        /\s+/g,
+        " "
+      );
+    }
+    if (solicitud.value.observaciones != null) {
+      solicitud.value.observaciones = solicitud.value.observaciones.replace(
+        /\s+/g,
+        " "
+      );
+    }
+    if (solicitud.value.itinerario != null) {
+      solicitud.value.itinerario = solicitud.value.itinerario.replace(
+        /\s+/g,
+        " "
+      );
+    }
+    let resp = null;
+    if (is_Editar.value == false) {
+      if (list_Destinos.value.length == 0) {
+        $q.notify({
+          type: "warning",
+          message: "No ha agregado ningun destino",
+        });
+        loading.value = false;
+        return;
       } else {
-        if (list_Destinos.value.length == 0) {
-          $q.notify({
-            type: "warning",
-            message: "No ha agregado ningun destino",
-          });
-          loading.value = false;
-          return;
-        } else {
-          $q.loading.show({
-            spinner: QSpinnerFacebook,
-            spinnerColor: "purple-ieen",
-            spinnerSize: 140,
-            backgroundColor: "purple-3",
-            message: "Espere un momento, por favor...",
-            messageColor: "black",
-          });
-          resp = await misSolicitudesStore.update_Solicitud(
-            solicitud.value,
-            encryptStorage.decrypt("sistema")
-          );
-        }
+        $q.loading.show({
+          spinner: QSpinnerFacebook,
+          spinnerColor: "purple-ieen",
+          spinnerSize: 140,
+          backgroundColor: "purple-3",
+          message: "Espere un momento, por favor...",
+          messageColor: "black",
+        });
+        resp = await misSolicitudesStore.create_Solicitud(solicitud.value);
       }
-      if (resp.success) {
-        loading.value = false;
-        $q.loading.hide();
-        await misSolicitudesStore.load_Mis_Solicitudes();
+    } else {
+      if (list_Destinos.value.length == 0) {
         $q.notify({
-          type: "positive",
-          message: resp.data,
+          type: "warning",
+          message: "No ha agregado ningun destino",
         });
-        actualizarModal();
+        loading.value = false;
+        return;
       } else {
-        loading.value = false;
-        $q.loading.hide();
-        $q.notify({
-          type: "negative",
-          message: resp.data,
+        $q.loading.show({
+          spinner: QSpinnerFacebook,
+          spinnerColor: "purple-ieen",
+          spinnerSize: 140,
+          backgroundColor: "purple-3",
+          message: "Espere un momento, por favor...",
+          messageColor: "black",
         });
+        resp = await misSolicitudesStore.update_Solicitud(
+          solicitud.value,
+          encryptStorage.decrypt("sistema")
+        );
       }
     }
-
+    if (resp.success) {
+      loading.value = false;
+      $q.loading.hide();
+      await misSolicitudesStore.load_Mis_Solicitudes();
+      $q.notify({
+        type: "positive",
+        message: resp.data,
+      });
+      actualizarModal();
+    } else {
+      loading.value = false;
+      $q.loading.hide();
+      $q.notify({
+        type: "negative",
+        message: resp.data,
+      });
+    }
     loading.value = false;
   }
 };

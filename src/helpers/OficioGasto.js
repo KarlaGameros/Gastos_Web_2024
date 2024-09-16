@@ -12,9 +12,7 @@ const OficioGasto = async (id) => {
     //--------------------------------------------------------------------------//
     await misSolicitudesStore.load_Solicitud(id);
     await distribucionStore.load_Distribuciones(id);
-    let doc = new jsPDF({
-      format: "a4",
-    });
+    const doc = new jsPDF({ orientation: "portrait", format: "letter" });
     doc.setPage();
     doc.setFontSize(20);
     doc.setFont("bold");

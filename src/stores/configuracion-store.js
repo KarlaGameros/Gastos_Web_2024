@@ -40,15 +40,16 @@ export const useConfiguracionStore = defineStore("useConfiguracionStore", {
     async load_Empleados_By_Area(id) {
       try {
         this.list_Empleados_By_Area = [];
-        const resp = await api.get(`/Empleados/GetListaByArea/${id}`);
+        const resp = await api.get(`/Empleados/ByArea/${id}`);
         if (resp.status == 200) {
           const { success, data } = resp.data;
           if (success === true) {
             if (data) {
               this.list_Empleados_By_Area = data.map((element) => {
                 return {
-                  label: element.label,
-                  value: element.value,
+                  label: element.nombre_Completo,
+                  value: element.id,
+                  puesto_Id: element.puesto_Id,
                 };
               });
             }

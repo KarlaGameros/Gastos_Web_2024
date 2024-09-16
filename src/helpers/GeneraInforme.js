@@ -2,9 +2,7 @@ import { jsPDF } from "jspdf";
 
 const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
   try {
-    let doc = new jsPDF({
-      format: "a4",
-    });
+    const doc = new jsPDF({ orientation: "portrait", format: "letter" });
     doc.setPage();
     doc.setFontSize(20);
     doc.setFont("bold");
@@ -15,13 +13,15 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     let y = 22;
     let img = new Image();
     img.src = require("../assets/IEEN300.png");
-    doc.addImage(img, "PNG", 10, x, imgWidth, imgHeight);
+    doc.addImage(img, "png", 10, 5, 30, 20);
     let title = "Instituto Estatal Electoral de Nayarit";
     let titleWidth = doc.getTextWidth(title);
     let titleX = (pdfWidth - titleWidth) / 2;
     doc.text(titleX, 15, title);
     doc.setFontSize(15);
-    doc.text("INFORME DE COMISIÓN", 85, y);
+    doc.text("Informe de comisión", 89, y);
+    doc.setFontSize(14);
+    doc.text(`Folio: ${solicitud_gasto.folio}`, 160, y);
     doc.setFontSize(12);
     y = 35;
     doc.text(
@@ -42,14 +42,32 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     y += 7;
     doc.text(titleDatosComisionado, titlexDatosPerosnal, y);
     y += 1;
-    doc.rect(x - 2, y, 55, rectHeight, "S");
-    doc.rect(x + 53, y, 140, rectHeight, "S");
+    // doc.rect(x - 2, y, 55, rectHeight, "S");
+    // doc.rect(x + 53, y, 146, rectHeight, "S");
+    // y += 5;
+    // doc.text("Nombre del comisionado:", x + 3, y);
+    // doc.text(
+    //   "Edgar Daniel Jiménez Cabrera - Titular de la Unidad Técnica de Informática y Estadística",
+    //   x + 60,
+    //   y
+    // );
+    let strArrNombre = doc.splitTextToSize(
+      solicitud_gasto.empleado_Solicitante,
+      pdfWidth - 77
+    );
+    let rectNomHeight = 6 * strArrNombre.length;
+    doc.rect(x - 2, y, 55, rectNomHeight, "S");
+    doc.rect(x + 53, y, 146, rectNomHeight, "S");
     y += 5;
     doc.text("Nombre del comisionado:", x + 3, y);
-    doc.text(solicitud_gasto.empleado_Solicitante, x + 60, y);
-    y += 3;
+    doc.text(solicitud_gasto.empleado_Solicitante, x + 60, y, {
+      align: "justify",
+      maxWidth: pdfWidth - 79,
+    });
+    //-------
+    y += rectNomHeight - 5;
     doc.rect(x - 2, y, 55, rectHeight, "S");
-    doc.rect(x + 53, y, 140, rectHeight, "S");
+    doc.rect(x + 53, y, 146, rectHeight, "S");
     y += 5;
     doc.text("Adscripción:", x + 3, y);
     doc.text(solicitud_gasto.area, x + 60, y);
@@ -62,7 +80,7 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     doc.text(titleDatosComision, titlexDatosComision, y);
     y += 1;
     doc.rect(x - 2, y, 55, rectHeight, "S");
-    doc.rect(x + 53, y, 140, rectHeight, "S");
+    doc.rect(x + 53, y, 146, rectHeight, "S");
     y += 7;
     doc.text("No. Oficio comisión:", x + 3, y);
     doc.text(solicitud_gasto.folio, x + 60, y);
@@ -75,7 +93,7 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     let rectDestHeight = 6 * strArrDest.length;
 
     doc.rect(x - 2, y, 55, rectDestHeight, "S");
-    doc.rect(x + 53, y, 140, rectDestHeight, "S");
+    doc.rect(x + 53, y, 146, rectDestHeight, "S");
 
     doc.text("Lugar de la comisión:", x + 3, y + 6);
     doc.text(solicitud_gasto.destino_String, x + 60, y + 6, {
@@ -84,7 +102,7 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     });
     y += rectDestHeight;
     doc.rect(x - 2, y, 55, rectHeight, "S");
-    doc.rect(x + 53, y, 140, rectHeight, "S");
+    doc.rect(x + 53, y, 146, rectHeight, "S");
     y += 7;
     doc.text("Periodo de la comisión:", x + 3, y);
     doc.text(
@@ -94,7 +112,7 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     );
     y += 1;
     doc.rect(x - 2, y, 55, rectHeight, "S");
-    doc.rect(x + 53, y, 140, rectHeight, "S");
+    doc.rect(x + 53, y, 146, rectHeight, "S");
     y += 7;
     doc.text("Medio de transporte:", x + 3, y);
     doc.text(
@@ -106,13 +124,13 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     );
     y += 1;
     doc.rect(x - 2, y, 55, rectHeight, "S");
-    doc.rect(x + 53, y, 140, rectHeight, "S");
+    doc.rect(x + 53, y, 146, rectHeight, "S");
     y += 7;
     doc.text("Vehículo:", x + 3, y);
     doc.text(solicitud_gasto.vehiculo ?? "N/A", x + 60, y);
     y += 1;
     doc.rect(x - 2, y, 55, rectHeight, "S");
-    doc.rect(x + 53, y, 140, rectHeight, "S");
+    doc.rect(x + 53, y, 146, rectHeight, "S");
     y += 7;
     let importeWidth = doc.getTextWidth(`$${solicitud_gasto.monto_Asignado}`);
     doc.text("Monto erogado:", x + 3, y);
@@ -128,7 +146,7 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     );
     let rectActHeight = 6 * strArrObjetivo.length;
     doc.rect(x - 2, y, 55, rectActHeight, "S");
-    doc.rect(x + 53, y, 140, rectActHeight, "S");
+    doc.rect(x + 53, y, 146, rectActHeight, "S");
     y += 5;
     doc.text("Objetivo de la comisión:", x + 3, y);
     doc.text(solicitud_gasto.actividad, x + 60, y, {
@@ -186,39 +204,40 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
       maxWidth: pdfWidth - 20,
     });
 
-    doc.setFontSize(14);
-    y += 20 + rectConcluHeight;
-    let titleAtte = "Atentamente";
-    let titleAtteWidth = doc.getTextWidth(titleAtte);
-    let titlexAtte = (pdfWidth - titleAtteWidth) / 2;
-    doc.text(titleAtte, titlexAtte, y);
-    y += 10;
-    doc.setFontSize(12);
+    // doc.setFontSize(14);
+    // y += 20 + rectConcluHeight;
+    // let titleAtte = "Atentamente";
+    // let titleAtteWidth = doc.getTextWidth(titleAtte);
+    // let titlexAtte = (pdfWidth - titleAtteWidth) / 2;
+    // doc.text(titleAtte, titlexAtte, y);
+    // y += 10;
+    // doc.setFontSize(12);
 
-    doc.rect(x + 40, y, 110, 1, "F");
-    y += 5;
-    let titleAtteP = solicitud_gasto.empleado_Solicitante;
-    let titleAtteWidthP = doc.getTextWidth(titleAtteP);
-    let titlexAtteP = (pdfWidth - titleAtteWidthP) / 2;
-    doc.text(titleAtteP, titlexAtteP, y);
+    // doc.rect(x + 40, y, 110, 1, "F");
+    // y += 5;
+    // let titleAtteP = solicitud_gasto.empleado_Solicitante;
+    // let titleAtteWidthP = doc.getTextWidth(titleAtteP);
+    // let titlexAtteP = (pdfWidth - titleAtteWidthP) / 2;
+    // doc.text(titleAtteP, titlexAtteP, y);
     doc.addPage();
     doc.setPage();
 
     // Get the width of the PDF document
     imgWidth = 90;
     imgHeight = 110;
-    x = 10;
-    y = 10;
 
-    title = "Evidencias";
-    titleWidth = doc.getTextWidth(title);
-
-    // Calculate the x coordinate to center the title
     doc.setFontSize(20);
-    titleX = (pdfWidth - titleWidth) / 2;
-    // Add the title to the PDF document
-    // doc.rect(titleX - 10, 5, titleWidth + 20, 25, "S");
-    doc.text(titleX, 20, title);
+    doc.addImage(img, "png", 10, 5, 30, 20);
+    let titleWidthE = doc.getTextWidth(
+      "Instituto Estatal Electoral de Nayarit"
+    );
+    let titleXE = (pdfWidth - titleWidthE) / 2;
+    doc.text(titleXE, 15, "Instituto Estatal Electoral de Nayarit");
+    doc.setFontSize(15);
+    doc.text("Evidencias", 100, 22);
+    doc.setFontSize(15);
+    doc.text(`Folio: ${solicitud_gasto.folio}`, 160, 22);
+
     let vuelta = 1;
     for (let evidencia of evidencias) {
       switch (vuelta) {
@@ -232,11 +251,11 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
           break;
         case 3:
           x = 10;
-          y = 145;
+          y = 138;
           break;
         case 4:
           x = 110;
-          y = 145;
+          y = 138;
       }
       const extension = evidencia.evidencia_URL.split(".").pop();
       doc.addImage(evidencia.base_64, extension, x, y, imgWidth, imgHeight);
@@ -248,6 +267,38 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
         y = 10;
         vuelta = 1;
       }
+    }
+    function createFooter() {
+      doc.setFontSize(14);
+      y = 255;
+      let titleAtte = "Atentamente";
+      let titleAtteWidth = doc.getTextWidth(titleAtte);
+      let titlexAtte = (pdfWidth - titleAtteWidth) / 2;
+      doc.text(titleAtte, titlexAtte, y);
+      y += 10;
+      doc.setFontSize(12);
+
+      doc.rect(50, y, 110, 1, "F");
+      y += 5;
+      let titleAtteP = solicitud_gasto.empleado_Solicitante;
+      let titleAtteWidthP = doc.getTextWidth(titleAtteP);
+      let titlexAtteP = (pdfWidth - titleAtteWidthP) / 2;
+      doc.text(titleAtteP, titlexAtteP, y);
+
+      doc.setPage(i + 1);
+      doc.setTextColor(0, 0, 0);
+      doc.text(
+        "Página " + (i + 1) + " de " + newPageCount,
+        200,
+        275,
+        null,
+        null,
+        "right"
+      );
+    }
+    var newPageCount = doc.internal.getNumberOfPages();
+    for (var i = 0; i < newPageCount; i++) {
+      createFooter();
     }
     doc.save(`${solicitud_gasto.folio}.pdf`);
     $q.loading.hide();

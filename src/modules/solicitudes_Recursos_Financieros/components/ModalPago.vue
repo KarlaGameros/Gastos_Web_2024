@@ -29,7 +29,6 @@
           <div class="col-lg-6 col-md-6 col-sm-12">
             <q-select
               color="purple-ieen"
-              filled
               use-input
               input-debounce="0"
               v-model="forma_Pago_Id"
@@ -43,7 +42,6 @@
           </div>
           <div class="col-lg-6 col-md-6 col-sm-12">
             <q-input
-              filled
               v-model="fecha_Pago"
               label="Fecha y hora de pago"
               hint="ingrese fecha de salida"

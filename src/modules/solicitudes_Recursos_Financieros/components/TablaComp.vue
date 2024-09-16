@@ -2,16 +2,16 @@
   <q-table
     :rows="
       props.tipo == 'pendientes'
-        ? list_Solicitudes_RF
+        ? list_Solicitudes_RF_Filtro
         : props.tipo == 'aprobados_rf'
-        ? list_Solictudes_Aprobadas_RF.filter(
+        ? list_Solictudes_Aprobadas_RF_Filtro.filter(
             (x) =>
               x.pagado == false &&
               x.estatus != 'Cancelado' &&
               x.saldo_Cero != true
           )
         : props.tipo == 'pagada'
-        ? list_Solictudes_Aprobadas_RF.filter(
+        ? list_Solictudes_Aprobadas_RF_Filtro.filter(
             (x) =>
               x.estatus == 'Pagada' ||
               (x.saldo_Cero == true &&
@@ -19,7 +19,7 @@
                   x.estatus == 'Aprobado por recursos financieros'))
           )
         : props.tipo == 'pendiente_concluir'
-        ? list_Solictudes_Aprobadas_RF.filter(
+        ? list_Solictudes_Aprobadas_RF_Filtro.filter(
             (x) =>
               x.estatus != 'Concluido' &&
               x.estatus != 'Cancelado' &&
@@ -30,15 +30,18 @@
                 x.saldo_Cero == true)
           )
         : props.tipo == 'concluidas'
-        ? list_Solictudes_Aprobadas_RF.filter(
+        ? list_Solictudes_Aprobadas_RF_Filtro.filter(
             (x) => x.estatus == 'Concluido' && x.pagado == true
           )
-        : list_Solictudes_Aprobadas_RF.filter((x) => x.estatus == 'Cancelado')
+        : list_Solictudes_Aprobadas_RF_Filtro.filter(
+            (x) => x.estatus == 'Cancelado'
+          )
     "
     :columns="columns"
     :filter="filter"
     :loading="is_loading"
     :pagination="pagination"
+    :rows-per-page-options="[5, 15, 20, 25, 50]"
     row-key="id"
     rows-per-page-label="Filas por pagina"
     no-data-label="No hay registros"
@@ -135,9 +138,16 @@
             <q-btn
               v-if="
                 tipo == 'pendiente_concluir' &&
-                ((props.row.estatus == 'Pendiente de conclusión' &&
-                  props.row.pagado == true) ||
-                  props.row.saldo_Cero == true)
+                ((props.row.monto_Asignado != '$0.00' &&
+                  props.row.e_Comprobacion_Gasto == true &&
+                  props.row.e_Evidencias == true &&
+                  props.row.e_Informe_Actividades == true &&
+                  props.row.e_Reintegro == true) ||
+                  (props.row.monto_Asignado == '$0.00' &&
+                    props.row.e_Evidencias == true &&
+                    props.row.e_Informe_Actividades == true) ||
+                  (props.row.monto_Asignado == props.row.monto_Reintegro &&
+                    props.row.monto_Saldo == '$0.00'))
               "
               flat
               round
@@ -145,7 +155,7 @@
               icon="fact_check"
               @click="concluir(col.value)"
             >
-              <q-tooltip>Concluir</q-tooltip>
+              <q-tooltip>Concluir </q-tooltip>
             </q-btn>
             <q-btn
               v-if="tipo == 'pendiente_concluir' || tipo == 'concluidas'"
@@ -227,6 +237,15 @@
               />
             </q-badge>
           </div>
+          <label v-else-if="col.name == 'destino'">
+            <label>{{ props.row.destino_Corto }}</label>
+            <q-tooltip
+              :offset="[10, 10]"
+              v-if="props.row.destino_Corto.length != col.value.length"
+            >
+              {{ col.value }}
+            </q-tooltip>
+          </label>
           <label v-else>{{ col.value }}</label>
         </q-td>
       </q-tr>
@@ -265,6 +284,7 @@ import { onBeforeMount, ref } from "vue";
 import { useSolicitudesRFStore } from "src/stores/solicitudes-rf-store";
 import { useDistribucionStore } from "src/stores/distribuciones-store";
 import { useMisSolicitudesStore } from "src/stores/mis-solicitudes-store";
+import { useReintegroStore } from "src/stores/reintegro-store";
 import { useComprobarStore } from "src/stores/comprobar-store";
 import { useAuthStore } from "src/stores/auth-store";
 import ModalComprobarComp from "../components/ModalComprobarComp.vue";
@@ -278,10 +298,16 @@ const misSolicitudesStore = useMisSolicitudesStore();
 const solicitudesRFStore = useSolicitudesRFStore();
 const distribucionStore = useDistribucionStore();
 const comprobacionStore = useComprobarStore();
+const reintegroStore = useReintegroStore();
 const authStore = useAuthStore();
 const { modulo } = storeToRefs(authStore);
-const { is_loading, list_Solicitudes_RF, list_Solictudes_Aprobadas_RF } =
-  storeToRefs(solicitudesRFStore);
+const {
+  is_loading,
+  list_Solicitudes_RF,
+  list_Solicitudes_RF_Filtro,
+  list_Solictudes_Aprobadas_RF,
+  list_Solictudes_Aprobadas_RF_Filtro,
+} = storeToRefs(solicitudesRFStore);
 const { solicitud } = storeToRefs(misSolicitudesStore);
 const props = defineProps({
   tipo: {
@@ -319,6 +345,7 @@ const cargarData = async () => {
       "fecha_Salida",
       "fecha_LLegada",
       "monto_Asignado",
+      "destino",
       "id",
     ];
   } else {
@@ -331,6 +358,7 @@ const cargarData = async () => {
       "fecha_Salida",
       "fecha_LLegada",
       "monto_Asignado",
+      "destino",
       "id",
     ];
   }
@@ -394,8 +422,8 @@ const pagar = async (id) => {
 
 const ver_reintegro = async (id) => {
   await misSolicitudesStore.load_Solicitud(id);
-  await solicitudesRFStore.load_Reintegro(id);
-  solicitudesRFStore.actualizarModalReintegro(true);
+  await reintegroStore.load_Reintegro(solicitud.value.id);
+  reintegroStore.actualizarModal(true);
 };
 
 const concluir = async (id) => {
@@ -598,6 +626,13 @@ const columns = [
     sortable: true,
   },
   {
+    name: "destino",
+    align: "center",
+    label: "Destino",
+    field: "destino",
+    sortable: true,
+  },
+  {
     name: "id",
     align: "center",
     label: "Acciones",
@@ -696,13 +731,6 @@ const columnsExcel = [
     align: "center",
     label: "e_Reintegro",
     field: "e_Reintegro",
-    sortable: true,
-  },
-  {
-    name: "afectar",
-    align: "center",
-    label: "afectar",
-    field: "afectar",
     sortable: true,
   },
   {

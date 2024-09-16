@@ -7,6 +7,7 @@
         :filter="filter"
         :pagination="pagination"
         row-key="id"
+        :rows-per-page-options="[5, 15, 20, 25, 50]"
         rows-per-page-label="Filas por pagina"
         no-data-label="No hay registros"
       >
@@ -42,6 +43,9 @@
                   <q-tooltip>Ver</q-tooltip>
                 </q-btn>
               </div>
+              <label v-else-if="col.name == 'importe'"
+                >${{ col.value.toFixed(2) }}</label
+              >
               <label v-else>{{ col.value }}</label>
             </q-td>
           </q-tr>

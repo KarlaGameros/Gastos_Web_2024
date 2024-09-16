@@ -5,12 +5,15 @@ export const useDashboardStore = defineStore("dashboard", {
   state: () => ({
     filtrar: false,
     yearFiltro: null,
+    areasTodos: true,
+    fecha: null,
     solicitudes: [],
     montos_Erogados: [],
     montos_Utilizados: [],
     areas_Gastos: [],
     areas_Filtro: [],
     areas: [],
+    gastos: [],
     solicitudes_Totales: 0,
     total_Erogado: 0,
     total_Utilizado: 0,
@@ -36,13 +39,15 @@ export const useDashboardStore = defineStore("dashboard", {
     },
   }),
   actions: {
-    async loadDashboard(year) {
+    async loadDashboard(inicio, fin) {
       try {
         this.solicitudes = [];
         this.montos = [];
         this.areas_Filtro = [];
         this.areas_Gastos = [];
-        const resp = await api.get(`/GastosComprobar/Dashboard/${year}`);
+        const resp = await api.get(
+          `/GastosComprobar/Dashboard/ByRangoFecha?Fecha_Inicio=${inicio}&Fecha_Fin=${fin}`
+        );
         if (resp.status == 200) {
           const { success, data } = resp.data;
           if (success == true) {
@@ -105,17 +110,12 @@ export const useDashboardStore = defineStore("dashboard", {
                   empleado_Solicitante: solicitud.empleado_Solicitante,
                   fecha_Salida: solicitud.fecha_Salida,
                   fecha_LLegada: solicitud.fecha_LLegada,
-                  monto_Asignado: `$${solicitud.monto_Asignado.toLocaleString(
-                    "en-US"
-                  )}`,
-                  monto_Utilizado: `$${solicitud.monto_Utilizado.toLocaleString(
-                    "en-US"
-                  )}`,
-                  monto_Reintegro: solicitud.e_Reintegro
-                    ? `$${solicitud.monto_Reintegro.toLocaleString("en-US")}`
-                    : "$0",
-                  saldo: `$${solicitud.monto_Saldo}`,
+                  monto_Asignado: solicitud.monto_Asignado,
+                  monto_Utilizado: solicitud.monto_Utilizado,
+                  monto_Reintegro: solicitud.monto_Reintegro,
+                  saldo: solicitud.monto_Saldo,
                   estatus: solicitud.estatus,
+                  actividad: solicitud.actividad,
                 };
               });
               this.solicitudes_filtro = solicitudesArray;

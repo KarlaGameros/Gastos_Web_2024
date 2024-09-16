@@ -1,12 +1,15 @@
 <template>
   <q-table
     :rows="
-      props.tipo == 'pendientes' ? list_Solicitudes_ByArea : list_Historial
+      props.tipo == 'pendientes'
+        ? list_Solicitudes_ByArea
+        : list_Historial_Filtro
     "
     :columns="columns"
     :filter="filter"
     :loading="loading"
     :pagination="pagination"
+    :rows-per-page-options="[5, 15, 20, 25, 50]"
     row-key="id"
     rows-per-page-label="Filas por pagina"
     no-data-label="No hay registros"
@@ -143,8 +146,12 @@ const solicitudesAreaStore = useSolicitudesAreaStore();
 const misSolicitudesStore = useMisSolicitudesStore();
 const destinosStore = useDestinoStore();
 const { modulo } = storeToRefs(authStore);
-const { list_Solicitudes_ByArea, list_Historial, loading } =
-  storeToRefs(solicitudesAreaStore);
+const {
+  list_Solicitudes_ByArea,
+  list_Historial_Filtro,
+  list_Historial,
+  loading,
+} = storeToRefs(solicitudesAreaStore);
 const props = defineProps({
   tipo: {
     type: String,
@@ -152,26 +159,6 @@ const props = defineProps({
 });
 
 //-----------------------------------------------------------
-
-onBeforeMount(() => {
-  cargarData();
-});
-
-//-----------------------------------------------------------
-
-const cargarData = async () => {
-  $q.loading.show({
-    spinner: QSpinnerFacebook,
-    spinnerColor: "purple-ieen",
-    spinnerSize: 140,
-    backgroundColor: "purple-3",
-    message: "Espere un momento, por favor...",
-    messageColor: "black",
-  });
-  await solicitudesAreaStore.load_Solicitudes_Area();
-  await solicitudesAreaStore.load_Historial();
-  $q.loading.hide();
-};
 
 const verSolicitud = async (id) => {
   $q.loading.show({

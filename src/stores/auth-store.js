@@ -68,6 +68,8 @@ export const useAuthStore = defineStore("auth", {
                   sistema_Id: sistema.sistema_Id,
                   sistema: sistema.sistema,
                   url: sistema.url,
+                  value: sistema.sistema_Id,
+                  label: sistema.sistema,
                 };
               });
               this.sistemas = sistemasArray;
@@ -78,7 +80,7 @@ export const useAuthStore = defineStore("auth", {
                   label: app.sistema,
                   avatar:
                     app.logo_Url == null
-                      ? "https://api.sistemas-ieenayarit.org/Imagenes/Sistemas/67cfdabe-0538-4324-b711-93bcb6cb9a60.png"
+                      ? "http://sistema.ieenayarit.org:9270/Imagenes/Sistemas/67cfdabe-0538-4324-b711-93bcb6cb9a60.png"
                       : app.logo_Url,
                   url: app.url,
                 };
@@ -87,14 +89,14 @@ export const useAuthStore = defineStore("auth", {
                 id: 0,
                 label: "Cerrar sesión",
                 avatar:
-                  "https://api.sistemas-ieenayarit.org/Imagenes/Sistemas/dbb9640f-dd18-4fc3-b530-7041d8594240.png",
+                  "http://sistema.ieenayarit.org:9270/Imagenes/Sistemas/dbb9640f-dd18-4fc3-b530-7041d8594240.png",
                 url: "",
               };
               const universoIEEN = {
                 id: 0,
                 label: "Ir a universo",
                 avatar:
-                  "https://api.sistemas-ieenayarit.org/Imagenes/Sistemas/67cfdabe-0538-4324-b711-93bcb6cb9a60.png",
+                  "http://sistema.ieenayarit.org:9270/Imagenes/Sistemas/67cfdabe-0538-4324-b711-93bcb6cb9a60.png",
                 url: "",
               };
 
