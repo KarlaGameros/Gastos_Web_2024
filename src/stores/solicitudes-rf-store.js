@@ -269,58 +269,56 @@ export const useSolicitudesRFStore = defineStore("useSolicitudesRFStore", {
             if (data) {
               this.list_Solictudes_Aprobadas_RF = data.map((solicitud) => {
                 var diasFaltantes = null;
-                if (!solicitud.pernoctado) {
-                  var fecha = null;
-                  var fechaSolicitud = solicitud.fecha_LLegada.split("-");
-                  var year = fechaSolicitud[0];
-                  var month = fechaSolicitud[1] - 1;
-                  var day = fechaSolicitud[2];
-                  fecha = new Date(year, month, day);
+                var fecha = null;
+                var fechaSolicitud = solicitud.fecha_LLegada.split("-");
+                var year = fechaSolicitud[0];
+                var month = fechaSolicitud[1] - 1;
+                var day = fechaSolicitud[2];
+                fecha = new Date(year, month, day);
 
-                  var fechaActual = null;
-                  var fechaA = new Date();
-                  var yearA = fechaA.getFullYear();
-                  var monthA = fechaA.getMonth();
-                  var dayA = fechaA.getDate();
-                  fechaActual = new Date(yearA, monthA, dayA);
+                var fechaActual = null;
+                var fechaA = new Date();
+                var yearA = fechaA.getFullYear();
+                var monthA = fechaA.getMonth();
+                var dayA = fechaA.getDate();
+                fechaActual = new Date(yearA, monthA, dayA);
 
-                  if (fecha.getTime() > fechaActual.getTime()) {
-                    diasFaltantes = "Comisión por realizar";
-                  } else if (fechaActual.getTime() == fecha.getTime()) {
-                    diasFaltantes = "Comisión en proceso";
-                  } else {
-                    fecha.setDate(fecha.getDate() + 9);
-                    var nuevaFecha = new Date(fecha.toISOString().slice(0, 10));
-                    diasFaltantes = Math.ceil(
-                      (nuevaFecha - fechaActual) / (1000 * 60 * 60 * 24)
-                    );
-                  }
+                if (fecha.getTime() > fechaActual.getTime()) {
+                  diasFaltantes = "Comisión por realizar";
+                } else if (fechaActual.getTime() == fecha.getTime()) {
+                  diasFaltantes = "Comisión en proceso";
                 } else {
-                  var fecha = null;
-                  var fechaSolicitud = solicitud.fecha_Salida.split("-");
-                  var year = fechaSolicitud[0];
-                  var month = fechaSolicitud[1] - 1;
-                  var day = fechaSolicitud[2];
-                  fecha = new Date(year, month, day);
-
-                  var fechaActual = null;
-                  var fechaA = new Date();
-                  var yearA = fechaA.getFullYear();
-                  var monthA = fechaA.getMonth();
-                  var dayA = fechaA.getDate();
-                  fechaActual = new Date(yearA, monthA, dayA);
-
-                  if (fecha.getTime() > fechaActual.getTime()) {
-                    diasFaltantes = "Comisión por realizar";
-                  } else if (fechaActual.getTime() <= fecha.getTime()) {
-                    diasFaltantes = "Comisión en proceso";
-                  } else {
-                    fecha.setDate(fecha.getDate() + 9);
-                    var nuevaFecha = new Date(fecha.toISOString().slice(0, 10));
-                    diasFaltantes = Math.ceil(
-                      (nuevaFecha - fechaActual) / (1000 * 60 * 60 * 24)
-                    );
-                  }
+                  fecha.setDate(fecha.getDate() + 9);
+                  var nuevaFecha = new Date(fecha.toISOString().slice(0, 10));
+                  diasFaltantes = Math.ceil(
+                    (nuevaFecha - fechaActual) / (1000 * 60 * 60 * 24)
+                  );
+                }
+                if (!solicitud.pernoctado) {
+                } else {
+                  // var fecha = null;
+                  // var fechaSolicitud = solicitud.fecha_Salida.split("-");
+                  // var year = fechaSolicitud[0];
+                  // var month = fechaSolicitud[1] - 1;
+                  // var day = fechaSolicitud[2];
+                  // fecha = new Date(year, month, day);
+                  // var fechaActual = null;
+                  // var fechaA = new Date();
+                  // var yearA = fechaA.getFullYear();
+                  // var monthA = fechaA.getMonth();
+                  // var dayA = fechaA.getDate();
+                  // fechaActual = new Date(yearA, monthA, dayA);
+                  // if (fecha.getTime() > fechaActual.getTime()) {
+                  //   diasFaltantes = "Comisión por realizar";
+                  // } else if (fechaActual.getTime() <= fecha.getTime()) {
+                  //   diasFaltantes = "Comisión en proceso";
+                  // } else {
+                  //   fecha.setDate(fecha.getDate() + 9);
+                  //   var nuevaFecha = new Date(fecha.toISOString().slice(0, 10));
+                  //   diasFaltantes = Math.ceil(
+                  //     (nuevaFecha - fechaActual) / (1000 * 60 * 60 * 24)
+                  //   );
+                  // }
                 }
                 return {
                   id: solicitud.id,

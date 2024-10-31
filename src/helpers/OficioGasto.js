@@ -69,11 +69,11 @@ const OficioGasto = async (id) => {
       solicitud.value.actividad,
       pdfWidth - 70
     );
-    let rectActHeight = 8 * strArrActividad.length;
+    let rectActHeight = 6 * strArrActividad.length;
     doc.rect(x - 2, y, 45, rectActHeight, "S");
     doc.rect(x + 43, y, 150, rectActHeight, "S");
     y += 6;
-    doc.text("Actividad:", x + 10, y);
+    doc.text("3:", x + 10, y);
     doc.text(strArrActividad, x + 48, y);
     //Destino
     var strArrDestino = doc.splitTextToSize(
@@ -165,60 +165,125 @@ const OficioGasto = async (id) => {
     doc.setFontSize(14);
     doc.text(`Total asignado: ${solicitud.value.monto_Asignado}`, x + 125, y);
     y += 10;
-    doc.setFontSize(12);
-    let strArrEscrito = doc.splitTextToSize(
-      "En caso de que no se comprueben los gastos y viáticos que amparan la suma recibida, dentro de los 8 días naturales siguientes a la fecha en que concluya la comisión conferida, autorizo para que se me descuente de mi sueldo.",
-      pdfWidth - 20
-    );
-    doc.text(strArrEscrito, x - 2, y, {
-      align: "justify",
-      maxWidth: pdfWidth - 20,
-    });
-    //Firmas Solicitante y jefe de area
-    y += 35;
-    doc.rect(x, y, 90, 1, "F");
-    doc.rect(x + 105, y, 90, 1, "F");
-    y += 5;
-    let strArrEmpSolicitante = doc.splitTextToSize(
-      solicitud.value.empleado_Solicitante,
-      100
-    );
-    let strArrEmpResponsable = doc.splitTextToSize(
-      solicitud.value.responsable_Area,
-      100
-    );
-    doc.setFontSize(11);
-    doc.text("Solicitante", x + 35, y - 20);
-    doc.text(strArrEmpSolicitante, x, y);
-    doc.text("Autoriza comisión", x + 135, y - 20);
-    doc.text(
-      `Autorizado con fecha ${solicitud.value.fecha_Aprobacion_JA}`,
-      x + 105,
-      y - 10
-    );
-    doc.text(strArrEmpResponsable, x + 105, y);
-    //Firmas recursos financieros y administración
-    y += 25;
-    doc.rect(x, y, 90, 1, "F");
-    doc.rect(x + 105, y, 90, 1, "F");
-    y += 5;
-    let strArrRecFinanciero = doc.splitTextToSize(
-      solicitud.value.empleado_Rec_Financieros,
-      90
-    );
-    let strArrEmpResponsableAdmon = doc.splitTextToSize(
-      solicitud.value.responsable_Administracion,
-      90
-    );
-    doc.text("Revisó", x + 37, y - 20);
-    doc.text(
-      `Revisado con fecha ${solicitud.value.fecha_Aprobacion_RF}`,
-      x,
-      y - 10
-    );
-    doc.text(strArrRecFinanciero, x, y);
-    doc.text("Autoriza gastos de viaje y viáticos", x + 121, y - 20);
-    doc.text(strArrEmpResponsableAdmon, x + 105, y);
+
+    //--------------------------------------------------------------------------//
+    //Numeracion de paginas y footer
+    var maxY = 222;
+    if (y > maxY) {
+      doc.addPage();
+      doc.setFontSize(12);
+      let strArrEscrito = doc.splitTextToSize(
+        "En caso de que no se comprueben los gastos y viáticos que amparan la suma recibida, dentro de los 8 días naturales siguientes a la fecha en que concluya la comisión conferida, autorizo para que se me descuente de mi sueldo.",
+        pdfWidth - 20
+      );
+      y = 170;
+      doc.text(strArrEscrito, x - 2, y, {
+        align: "justify",
+        maxWidth: pdfWidth - 20,
+      });
+      //Firmas Solicitante y jefe de area
+      y += 35;
+      doc.rect(x, y, 90, 1, "F");
+      doc.rect(x + 105, y, 90, 1, "F");
+      y += 5;
+      let strArrEmpSolicitante = doc.splitTextToSize(
+        solicitud.value.empleado_Solicitante,
+        100
+      );
+      let strArrEmpResponsable = doc.splitTextToSize(
+        solicitud.value.responsable_Area,
+        100
+      );
+
+      doc.setFontSize(11);
+      doc.text("Solicitante", x + 35, y - 20);
+      doc.text(strArrEmpSolicitante, x, y);
+      doc.text("Autoriza comisión", x + 135, y - 20);
+      doc.text(
+        `Autorizado con fecha ${solicitud.value.fecha_Aprobacion_JA}`,
+        x + 105,
+        y - 10
+      );
+      doc.text(strArrEmpResponsable, x + 105, y);
+      //Firmas recursos financieros y administración
+      y += 25;
+      doc.rect(x, y, 90, 1, "F");
+      doc.rect(x + 105, y, 90, 1, "F");
+      y += 5;
+      let strArrRecFinanciero = doc.splitTextToSize(
+        solicitud.value.empleado_Rec_Financieros,
+        90
+      );
+      let strArrEmpResponsableAdmon = doc.splitTextToSize(
+        solicitud.value.responsable_Administracion,
+        90
+      );
+      doc.text("Revisó", x + 37, y - 20);
+      doc.text(
+        `Revisado con fecha ${solicitud.value.fecha_Aprobacion_RF}`,
+        x,
+        y - 10
+      );
+      doc.text(strArrRecFinanciero, x, y);
+      doc.text("Autoriza gastos de viaje y viáticos", x + 121, y - 20);
+      doc.text(strArrEmpResponsableAdmon, x + 105, y);
+    } else {
+      doc.setFontSize(12);
+      let strArrEscrito = doc.splitTextToSize(
+        "En caso de que no se comprueben los gastos y viáticos que amparan la suma recibida, dentro de los 8 días naturales siguientes a la fecha en que concluya la comisión conferida, autorizo para que se me descuente de mi sueldo.",
+        pdfWidth - 20
+      );
+      doc.text(strArrEscrito, x - 2, y, {
+        align: "justify",
+        maxWidth: pdfWidth - 20,
+      });
+      //Firmas Solicitante y jefe de area
+      y += 35;
+      doc.rect(x, y, 90, 1, "F");
+      doc.rect(x + 105, y, 90, 1, "F");
+      y += 5;
+      let strArrEmpSolicitante = doc.splitTextToSize(
+        solicitud.value.empleado_Solicitante,
+        100
+      );
+      let strArrEmpResponsable = doc.splitTextToSize(
+        solicitud.value.responsable_Area,
+        100
+      );
+      doc.setFontSize(11);
+      doc.text("Solicitante", x + 35, y - 20);
+      doc.text(strArrEmpSolicitante, x, y);
+      doc.text("Autoriza comisión", x + 135, y - 20);
+      doc.text(
+        `Autorizado con fecha ${solicitud.value.fecha_Aprobacion_JA}`,
+        x + 105,
+        y - 10
+      );
+      doc.text(strArrEmpResponsable, x + 105, y);
+      //Firmas recursos financieros y administración
+      y += 25;
+      doc.rect(x, y, 90, 1, "F");
+      doc.rect(x + 105, y, 90, 1, "F");
+      y += 5;
+      let strArrRecFinanciero = doc.splitTextToSize(
+        solicitud.value.empleado_Rec_Financieros,
+        90
+      );
+      let strArrEmpResponsableAdmon = doc.splitTextToSize(
+        solicitud.value.responsable_Administracion,
+        90
+      );
+      doc.text("Revisó", x + 37, y - 20);
+      doc.text(
+        `Revisado con fecha ${solicitud.value.fecha_Aprobacion_RF}`,
+        x,
+        y - 10
+      );
+      doc.text(strArrRecFinanciero, x, y);
+      doc.text("Autoriza gastos de viaje y viáticos", x + 121, y - 20);
+      doc.text(strArrEmpResponsableAdmon, x + 105, y);
+    }
+
     doc.save(`${solicitud.value.folio}.pdf`);
     if (solicitud.value.fecha_Impresion == "Sin registro") {
       const resp = await misSolicitudesStore.imprimir_Gasto(id);

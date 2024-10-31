@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { api } from "src/boot/axios";
+import { api, urlSistemas } from "src/boot/axios";
 import { EncryptStorage } from "storage-encryption";
 
 const encryptStorage = new EncryptStorage("SECRET_KEY", "sessionStorage");
@@ -81,22 +81,20 @@ export const useAuthStore = defineStore("auth", {
                   avatar:
                     app.logo_Url == null
                       ? "http://sistema.ieenayarit.org:9270/Imagenes/Sistemas/67cfdabe-0538-4324-b711-93bcb6cb9a60.png"
-                      : app.logo_Url,
+                      : `${urlSistemas}:9270${app.logo_Url.split("9270")[1]}`,
                   url: app.url,
                 };
               });
               const logOut = {
                 id: 0,
                 label: "Cerrar sesión",
-                avatar:
-                  "http://sistema.ieenayarit.org:9270/Imagenes/Sistemas/dbb9640f-dd18-4fc3-b530-7041d8594240.png",
+                avatar: `${urlSistemas}:9270/Imagenes/Sistemas/dbb9640f-dd18-4fc3-b530-7041d8594240.png`,
                 url: "",
               };
               const universoIEEN = {
                 id: 0,
                 label: "Ir a universo",
-                avatar:
-                  "http://sistema.ieenayarit.org:9270/Imagenes/Sistemas/67cfdabe-0538-4324-b711-93bcb6cb9a60.png",
+                avatar: `${urlSistemas}:9270/Imagenes/Sistemas/67cfdabe-0538-4324-b711-93bcb6cb9a60.png`,
                 url: "",
               };
 

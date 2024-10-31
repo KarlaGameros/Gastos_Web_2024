@@ -87,7 +87,6 @@ import { storeToRefs } from "pinia";
 import { useQuasar, QSpinnerFacebook } from "quasar";
 import { useComprobarStore } from "src/stores/comprobar-store";
 import { useMisSolicitudesStore } from "src/stores/mis-solicitudes-store";
-import { onMounted } from "vue";
 
 //-----------------------------------------------------------
 

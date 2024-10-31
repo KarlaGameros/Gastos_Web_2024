@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { api } from "src/boot/axios";
+import { api, urlSistemas } from "src/boot/axios";
 
 export const useComprobarStore = defineStore("useComprobarStore", {
   state: () => ({
@@ -326,7 +326,9 @@ export const useComprobarStore = defineStore("useComprobarStore", {
               this.list_Evidencias = data.map((element) => {
                 return {
                   id: element.id,
-                  evidencia_URL: element.evidencia_URL,
+                  evidencia_URL: `${urlSistemas}:9270${
+                    element.evidencia_URL.split("9270")[1]
+                  }`,
                   descripcion: element.descripcion,
                   base_64: element.base_64,
                 };

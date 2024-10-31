@@ -228,6 +228,7 @@ import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { useNotificacionStore } from "../stores/notificaciones-store";
 import { useMisSolicitudesStore } from "src/stores/mis-solicitudes-store";
 import { useNotifications } from "../helpers/signalRService";
+import { urlSistemas } from "src/boot/axios";
 
 //----------------------------------------------------------
 
@@ -276,7 +277,7 @@ onBeforeMount(async () => {
       localStorage.clear();
       sessionStorage.clear();
       encryptStorage.remove("key");
-      window.location = "http://sistema.ieenayarit.org:9271?return=false";
+      window.location = `${urlSistemas}:9271?return=false`;
     }
   }
 
@@ -424,12 +425,12 @@ const show = () => {
       localStorage.clear();
       sessionStorage.clear();
       encryptStorage.remove("key");
-      window.location = "http://sistema.ieenayarit.org:9271?return=false";
+      window.location = `${urlSistemas}:9271?return=false`;
     } else if (action.label == "Ir a universo") {
-      window.location = "http://sistema.ieenayarit.org:9271?return=true";
+      window.location = `${urlSistemas}:9271?return=true`;
     } else {
       window.location =
-        action.url +
+        `${urlSistemas}:${action.url.split(":")[2]}` +
         `/#/?key=${encryptStorage.decrypt("key")}&sistema=${
           action.id
         }&usr=${encryptStorage.decrypt("usuario")}`;

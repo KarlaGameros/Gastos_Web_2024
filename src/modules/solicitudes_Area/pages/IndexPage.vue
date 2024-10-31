@@ -93,29 +93,6 @@
         class="my-card col-lg-6 col-md-6 col-sm-6 col-xs-12 bg-purple-1"
         style="border-radius: 10px"
       >
-        <!-- <q-item>
-          <q-item-section class="bg-purple-1">
-            <q-item-label class="purple-ieen text-bold text-purple-ieen">
-              {{ gastos_Filtrado[0].area_Nombre }}
-            </q-item-label>
-            <q-item-label>
-              Solicitudes:
-              {{ gastos_Filtrado[0].no_Solicitudes }}
-            </q-item-label>
-            <q-item-label>
-              Monto erogado: ${{ gastos_Filtrado[0].monto_Erogado }}
-            </q-item-label>
-            <q-item-label>
-              Monto ejercido: ${{ gastos_Filtrado[0].monto_Utilizado }}
-            </q-item-label>
-            <q-item-label>
-              Monto Reintegrado: ${{ gastos_Filtrado[0].monto_Reintegrado }}
-            </q-item-label>
-            <q-item-label>
-              Saldo ${{ gastos_Filtrado[0].monto_Saldo }}
-            </q-item-label>
-          </q-item-section>
-        </q-item> -->
         <q-item-label
           class="text-h6 q-pl-sm q-pt-sm purple-ieen text-bold text-purple-ieen"
         >
@@ -243,6 +220,7 @@ import { useSolicitudesAreaStore } from "src/stores/solicitudes-area-store";
 import { useDashboardStore } from "src/stores/dashboard-store";
 import TablaComp from "../components/TablaComp.vue";
 import ModalComp from "src/modules/mis_Solicitudes/components/ModalComp.vue";
+import Swal from "sweetalert2";
 
 //-----------------------------------------------------------
 
