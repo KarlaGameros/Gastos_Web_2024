@@ -879,6 +879,7 @@ const onSubmit = async () => {
     solicitud.value.medio_Transporte = medio_Transporte_Id.value;
     solicitud.value.medio_Transporte_Especifico =
       medio_Transporte_Especifico_Id.value;
+    solicitud.value.pernoctado = pernoctado.value;
     if (
       medio_Transporte_Especifico_Id.value == "Vehículo oficial" &&
       solicitud.value.rol == "Chofer"
