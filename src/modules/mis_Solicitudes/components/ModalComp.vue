@@ -924,6 +924,24 @@ const onSubmit = async () => {
           messageColor: "black",
         });
         resp = await misSolicitudesStore.create_Solicitud(solicitud.value);
+        if (resp.success) {
+          loading.value = false;
+          $q.loading.hide();
+          await misSolicitudesStore.load_Mis_Solicitudes();
+          $q.notify({
+            type: "positive",
+            message: resp.data,
+          });
+          actualizarModal(false);
+        } else {
+          loading.value = false;
+          $q.loading.hide();
+          $q.notify({
+            type: "negative",
+            message: resp.data,
+          });
+        }
+        loading.value = false;
       }
     } else {
       if (list_Destinos.value.length == 0) {
@@ -942,30 +960,43 @@ const onSubmit = async () => {
           message: "Espere un momento, por favor...",
           messageColor: "black",
         });
-        resp = await misSolicitudesStore.update_Solicitud(
-          solicitud.value,
-          encryptStorage.decrypt("sistema")
-        );
+        await misSolicitudesStore.load_Estatus_Solicitud(solicitud.value.id);
+        if (solicitud.value.aprobado_Responsable_Area) {
+          $q.loading.hide();
+          loading.value = false;
+          actualizarModal(false);
+          await misSolicitudesStore.load_Mis_Solicitudes();
+          $q.notify({
+            type: "warning",
+            message:
+              "La solicitud ya fue aprobada, por lo que no podrá guardar nuevos cambios",
+          });
+        } else {
+          resp = await misSolicitudesStore.update_Solicitud(
+            solicitud.value,
+            encryptStorage.decrypt("sistema")
+          );
+          if (resp.success) {
+            loading.value = false;
+            $q.loading.hide();
+            await misSolicitudesStore.load_Mis_Solicitudes();
+            $q.notify({
+              type: "positive",
+              message: resp.data,
+            });
+            actualizarModal();
+          } else {
+            loading.value = false;
+            $q.loading.hide();
+            $q.notify({
+              type: "negative",
+              message: resp.data,
+            });
+          }
+          loading.value = false;
+        }
       }
     }
-    if (resp.success) {
-      loading.value = false;
-      $q.loading.hide();
-      await misSolicitudesStore.load_Mis_Solicitudes();
-      $q.notify({
-        type: "positive",
-        message: resp.data,
-      });
-      actualizarModal();
-    } else {
-      loading.value = false;
-      $q.loading.hide();
-      $q.notify({
-        type: "negative",
-        message: resp.data,
-      });
-    }
-    loading.value = false;
   }
 };
 </script>

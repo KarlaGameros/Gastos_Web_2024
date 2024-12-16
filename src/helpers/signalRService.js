@@ -66,6 +66,7 @@ export function useNotifications() {
     } else {
       await misSolicitudesStore.load_Mis_Solicitudes();
     }
+    misSolicitudesStore.actualizarModal(false);
   };
 
   return { startConnection, onReceiveNotification, onLine };

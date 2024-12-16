@@ -158,7 +158,7 @@
               <q-tooltip>Concluir </q-tooltip>
             </q-btn>
             <q-btn
-              v-if="tipo == 'pendiente_concluir' || tipo == 'concluidas'"
+              v-if="tipo != 'pendientes' && tipo != 'canceladas'"
               flat
               round
               color="purple-ieen"

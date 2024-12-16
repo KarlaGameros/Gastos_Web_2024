@@ -133,5 +133,25 @@ export const useNotificacionStore = defineStore("notificacion", {
         };
       }
     },
+
+    async noLeer(id) {
+      try {
+        const resp = await api.get(`/NotificacionesUniverso/NoLeida/${id}`);
+        if (resp.status == 200) {
+          const { success, data } = resp.data;
+          return { success, data };
+        } else {
+          return {
+            success: false,
+            data: "Ocurrió un error, inténtelo de nuevo. Si el error persiste, contacte a soporte",
+          };
+        }
+      } catch (error) {
+        return {
+          success: false,
+          data: "Ocurrió un error, inténtelo de nuevo. Si el error persiste, contacte a soporte",
+        };
+      }
+    },
   },
 });

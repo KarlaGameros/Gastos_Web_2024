@@ -270,11 +270,18 @@ export const useSolicitudesRFStore = defineStore("useSolicitudesRFStore", {
               this.list_Solictudes_Aprobadas_RF = data.map((solicitud) => {
                 var diasFaltantes = null;
                 var fecha = null;
+                var fechaSalida = null;
+                var fechaSolicitudSalida = solicitud.fecha_Salida.split("-");
                 var fechaSolicitud = solicitud.fecha_LLegada.split("-");
                 var year = fechaSolicitud[0];
                 var month = fechaSolicitud[1] - 1;
                 var day = fechaSolicitud[2];
                 fecha = new Date(year, month, day);
+
+                var yearS = fechaSolicitudSalida[0];
+                var monthS = fechaSolicitudSalida[1] - 1;
+                var dayS = fechaSolicitudSalida[2];
+                fechaSalida = new Date(yearS, monthS, dayS);
 
                 var fechaActual = null;
                 var fechaA = new Date();
@@ -283,9 +290,21 @@ export const useSolicitudesRFStore = defineStore("useSolicitudesRFStore", {
                 var dayA = fechaA.getDate();
                 fechaActual = new Date(yearA, monthA, dayA);
 
-                if (fecha.getTime() > fechaActual.getTime()) {
+                if (
+                  fecha.getTime() > fechaActual.getTime() &&
+                  !solicitud.pernoctado
+                ) {
                   diasFaltantes = "Comisión por realizar";
-                } else if (fechaActual.getTime() == fecha.getTime()) {
+                } else if (
+                  fechaSalida.getTime() > fechaActual.getTime() &&
+                  solicitud.pernoctado
+                ) {
+                  diasFaltantes = "Comisión por realizar";
+                } else if (
+                  fechaActual.getTime() == fecha.getTime() ||
+                  (fechaActual.getTime() >= fechaSalida.getTime() &&
+                    fechaActual.getTime() <= fecha.getTime())
+                ) {
                   diasFaltantes = "Comisión en proceso";
                 } else {
                   fecha.setDate(fecha.getDate() + 9);

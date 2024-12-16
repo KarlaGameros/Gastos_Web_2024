@@ -73,7 +73,7 @@ const OficioGasto = async (id) => {
     doc.rect(x - 2, y, 45, rectActHeight, "S");
     doc.rect(x + 43, y, 150, rectActHeight, "S");
     y += 6;
-    doc.text("3:", x + 10, y);
+    doc.text("Actividad:", x + 10, y);
     doc.text(strArrActividad, x + 48, y);
     //Destino
     var strArrDestino = doc.splitTextToSize(

@@ -16,21 +16,23 @@
         no-data-label="No hay registros"
       >
         <template v-slot:top-left>
-          <q-select
-            style="width: 350px"
-            outlined
-            dense
-            color="purple-ieen"
-            v-model="sistema_Id"
-            :options="sistemas"
-            label="Sistemas"
-          >
-            <template v-slot:before>
-              <div class="text-subtitle1">
-                <q-icon name="arrow_right" />Filtrar por:
-              </div>
-            </template>
-          </q-select>
+          <div class="row">
+            <q-select
+              style="width: 250px"
+              outlined
+              dense
+              color="purple-ieen"
+              v-model="sistema_Id"
+              :options="sistemas"
+              label="Filtrar por sistemas"
+            />
+            <q-btn
+              color="purple-ieen"
+              icon-right="done_all"
+              @click="marcarTodoComoLeido"
+              label="Marcar todo como leido"
+            />
+          </div>
         </template>
         <template v-slot:top-right>
           <q-input
@@ -52,6 +54,15 @@
               <q-card-section class="text-center">
                 <div class="text-right">
                   <q-btn
+                    v-if="props.row.leido"
+                    @click="marcarNoLeido(props.row)"
+                    flat
+                    icon="mark_email_unread"
+                    color="purple-ieen"
+                  >
+                    <q-tooltip>Marcar como no leido</q-tooltip>
+                  </q-btn>
+                  <q-btn
                     v-if="!props.row.leido"
                     icon="check_circle"
                     color="purple-ieen"
@@ -60,7 +71,13 @@
                   >
                     <q-tooltip>Marcar como leido</q-tooltip>
                   </q-btn>
-                  <q-btn v-else icon="search" color="purple-ieen" flat>
+                  <q-btn
+                    @click="verSolicitud(props.row)"
+                    v-else
+                    icon="search"
+                    color="purple-ieen"
+                    flat
+                  >
                     <q-tooltip>Ver solicitud</q-tooltip>
                   </q-btn>
                 </div>
@@ -89,20 +106,20 @@
 </template>
 
 <script setup>
-import { useQuasar, QSpinnerFacebook } from "quasar";
-import { onBeforeMount, ref, watchEffect } from "vue";
-import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import { useNotificacionStore } from "../../../stores/notificaciones-store";
+import { storeToRefs } from "pinia";
 import { useAuthStore } from "src/stores/auth-store";
 import { EncryptStorage } from "storage-encryption";
+import { useNotificacionStore } from "../../../stores/notificaciones-store";
+import { useQuasar, QSpinnerFacebook } from "quasar";
+import { onBeforeMount, ref, watchEffect } from "vue";
+import Swal from "sweetalert2";
 
 //-----------------------------------------------------------
 
 const $q = useQuasar();
-const router = useRouter();
-const notificacionStore = useNotificacionStore();
 const authStore = useAuthStore();
+const notificacionStore = useNotificacionStore();
 const encryptStorage = new EncryptStorage("SECRET_KEY", "sessionStorage");
 const { sistemas } = storeToRefs(authStore);
 const { notificaciones_all } = storeToRefs(notificacionStore);
@@ -117,7 +134,7 @@ onBeforeMount(() => {
 
 //-----------------------------------------------------------
 
-const cargarData = async () => {
+const loading = () => {
   $q.loading.show({
     spinner: QSpinnerFacebook,
     spinnerColor: "purple-ieen",
@@ -126,37 +143,94 @@ const cargarData = async () => {
     message: "Espere un momento, por favor...",
     messageColor: "black",
   });
+};
+
+const cargarData = async () => {
+  loading();
   await notificacionStore.loadNotificaciones();
   await notificacionStore.loadNotificacionesAll();
+  sistemas.value.splice(0, 0, {
+    value: 0,
+    label: "Todos",
+  });
+  $q.loading.hide();
+};
+
+const alertNotify = (position, type, resp) => {
+  $q.notify({
+    position: position,
+    type: type,
+    message: resp,
+    actions: [
+      {
+        icon: "close",
+        color: "black",
+        round: true,
+        handler: () => {},
+      },
+    ],
+  });
+};
+
+const marcarTodoComoLeido = () => {
+  Swal.fire({
+    icon: "question",
+    title: "Marcar todo como leido",
+    text: "¿Está seguro de marcar todo como leido?",
+    reverseButtons: true,
+    showCloseButton: true,
+    showCancelButton: true,
+    allowOutsideClick: false,
+    cancelButtonColor: "#f44336",
+    confirmButtonColor: "#26A69A",
+    cancelButtonText: `No, regresar!`,
+    confirmButtonText: `Si, aceptar!`,
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      loading();
+      let resp = null;
+      resp = await notificacionStore.leerTodas();
+      if (resp.success) {
+        await notificacionStore.loadNotificacionesAll();
+        alertNotify("top-right", "positive", resp.data);
+      } else {
+        alertNotify("top-right", "negative", resp.data);
+      }
+      $q.loading.hide();
+    }
+  });
+};
+
+const marcarNoLeido = async (row) => {
+  loading();
+  let resp = null;
+  resp = await notificacionStore.noLeer(row.id);
+  if (resp.success) {
+    await notificacionStore.loadNotificaciones();
+    await notificacionStore.loadNotificacionesAll();
+    alertNotify("top-right", "positive", resp.data);
+  } else {
+    alertNotify("top-right", "negative", resp.data);
+  }
   $q.loading.hide();
 };
 
 const toSolicitudes = async (row) => {
-  $q.loading.show({
-    spinner: QSpinnerFacebook,
-    spinnerColor: "purple-ieen",
-    spinnerSize: 140,
-    backgroundColor: "purple-3",
-    message: "Espere un momento, por favor...",
-    messageColor: "black",
-  });
+  loading();
   let resp = await notificacionStore.leerNotificacion(row.id);
   if (resp.success == true) {
-    await notificacionStore.loadNotificaciones();
-  }
-  let url = sistemas.value.find((x) => x.value == row.sistema_Id);
-  if (url.label == "Gastos a Comprobar") {
-    router.push({
-      name: "misSolicitudes",
-    });
-  } else {
-    window.location =
-      url.url +
-      `/#/?key=${encryptStorage.decrypt("key")}&sistema=${
-        row.sistema_Id
-      }&usr=${encryptStorage.decrypt("usuario")}`;
+    cargarData();
   }
   $q.loading.hide();
+};
+
+const verSolicitud = (row) => {
+  let url = sistemas.value.find((x) => x.value == row.sistema_Id);
+  window.location =
+    url.url +
+    `/#/?key=${encryptStorage.decrypt("key")}&sistema=${
+      row.sistema_Id
+    }&usr=${encryptStorage.decrypt("usuario")}`;
 };
 
 const filtrar = (notificaciones, filtro) => {

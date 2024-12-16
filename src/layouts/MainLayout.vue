@@ -52,6 +52,15 @@
                 </q-item>
               </div>
               <q-card
+                v-if="notificaciones.length == 0"
+                class="text-center no-shadow no-border q-pa-sm"
+              >
+                <div class="text-indigo-8 text-purple-ieen">
+                  Sin notificaciones
+                </div>
+              </q-card>
+              <q-separator />
+              <q-card
                 v-if="notificaciones.length > 0"
                 class="text-center no-shadow no-border q-pa-sm"
               >
@@ -69,11 +78,6 @@
                   class="text-indigo-8"
                   @click="toNotificaciones"
                 ></q-btn>
-              </q-card>
-              <q-card class="text-center no-shadow no-border q-pa-sm" v-else>
-                <div class="text-indigo-8 text-purple-ieen">
-                  Sin notificaciones
-                </div>
               </q-card>
             </q-list>
           </q-menu>
@@ -201,6 +205,20 @@
             </q-item-section>
             <q-item-section>Administración</q-item-section>
           </q-item>
+          <q-item
+            v-if="menuVehiculos"
+            clickable
+            @click="verDisponibilidad"
+            class="text-grey-8 text-bold"
+            active-class="text-purple-ieen"
+          >
+            <q-item-section avatar>
+              <q-icon name="directions_car" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Ver disponibilidad de vehículos</q-item-label>
+            </q-item-section>
+          </q-item>
         </q-list>
       </q-scroll-area>
     </q-drawer>
@@ -248,6 +266,7 @@ const catalagosList = ref([]);
 const usuario = ref("");
 const userName = ref("");
 const Empleado = ref(null);
+const menuVehiculos = ref(false);
 
 //----------------------------------------------------------
 
@@ -377,7 +396,14 @@ const loadMenu = async () => {
         break;
     }
   });
-
+  let sistema = sistemas.value.find(
+    (x) => x.label == "Disponibilidad vehículo"
+  );
+  if (sistema == undefined) {
+    menuVehiculos.value = false;
+  } else {
+    menuVehiculos.value = true;
+  }
   $q.loading.hide();
 };
 
@@ -438,6 +464,28 @@ const show = () => {
   });
 };
 
+const verDisponibilidad = () => {
+  let sistema = sistemas.value.find(
+    (x) => x.label == "Disponibilidad vehículo"
+  );
+  $q.dialog({
+    title: "Ver disponibilidad de vehículos",
+    style: "width: 1000px; max-width: 120vw",
+    message: `<iframe
+            src="${`${urlSistemas}:${
+              sistema.url.split(":")[2]
+            }/#/ver_Disponibilidad/?key=${encryptStorage.decrypt(
+              "key"
+            )}&sistema=${sistema.sistema_Id}&usr=${encryptStorage.decrypt(
+              "usuario"
+            )}`}"
+            width="100%"
+            height="650"
+          ></iframe>`,
+    html: true,
+    ok: "Cerrar",
+  });
+};
 const marcarLeido = async () => {
   let resp = await notificacionStore.leerTodas();
   if (resp.success) {

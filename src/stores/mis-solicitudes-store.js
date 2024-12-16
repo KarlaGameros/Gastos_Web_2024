@@ -181,11 +181,18 @@ export const useMisSolicitudesStore = defineStore("useMisSolicitudesStore", {
               this.list_Mis_Solicitudes = data.map((solicitud) => {
                 var diasFaltantes = null;
                 var fecha = null;
+                var fechaSalida = null;
+                var fechaSolicitudSalida = solicitud.fecha_Salida.split("-");
                 var fechaSolicitud = solicitud.fecha_LLegada.split("-");
                 var year = fechaSolicitud[0];
                 var month = fechaSolicitud[1] - 1;
                 var day = fechaSolicitud[2];
                 fecha = new Date(year, month, day);
+
+                var yearS = fechaSolicitudSalida[0];
+                var monthS = fechaSolicitudSalida[1] - 1;
+                var dayS = fechaSolicitudSalida[2];
+                fechaSalida = new Date(yearS, monthS, dayS);
 
                 var fechaActual = null;
                 var fechaA = new Date();
@@ -193,10 +200,21 @@ export const useMisSolicitudesStore = defineStore("useMisSolicitudesStore", {
                 var monthA = fechaA.getMonth();
                 var dayA = fechaA.getDate();
                 fechaActual = new Date(yearA, monthA, dayA);
-
-                if (fecha.getTime() > fechaActual.getTime()) {
+                if (
+                  fecha.getTime() > fechaActual.getTime() &&
+                  !solicitud.pernoctado
+                ) {
                   diasFaltantes = "Comisión por realizar";
-                } else if (fechaActual.getTime() == fecha.getTime()) {
+                } else if (
+                  fechaSalida.getTime() > fechaActual.getTime() &&
+                  solicitud.pernoctado
+                ) {
+                  diasFaltantes = "Comisión por realizar";
+                } else if (
+                  fechaActual.getTime() == fecha.getTime() ||
+                  (fechaActual.getTime() >= fechaSalida.getTime() &&
+                    fechaActual.getTime() <= fecha.getTime())
+                ) {
                   diasFaltantes = "Comisión en proceso";
                 } else {
                   fecha.setDate(fecha.getDate() + 9);
@@ -412,6 +430,34 @@ export const useMisSolicitudesStore = defineStore("useMisSolicitudesStore", {
         }
       } catch (error) {
         this.is_loading = false;
+        return {
+          success: false,
+          data: "Ocurrió un error, inténtelo de nuevo. Si el error persiste, contacte a soporte",
+        };
+      }
+    },
+
+    //-----------------------------------------------------------
+    async load_Estatus_Solicitud(id) {
+      try {
+        const resp = await api.get(
+          `/GastosComprobar/SolicitudesGastosComprobar/${id}`
+        );
+        if (resp.status == 200) {
+          const { success, data } = resp.data;
+          if (success === true) {
+            this.solicitud.aprobado_Responsable_Area =
+              data.aprobado_Responsable_Area;
+          } else {
+            return { success, data };
+          }
+        } else {
+          return {
+            success: false,
+            data: "Ocurrió un error, inténtelo de nuevo. Si el error persiste, contacte a soporte",
+          };
+        }
+      } catch (error) {
         return {
           success: false,
           data: "Ocurrió un error, inténtelo de nuevo. Si el error persiste, contacte a soporte",

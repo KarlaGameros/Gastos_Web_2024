@@ -60,7 +60,7 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     doc.rect(x + 53, y, 146, rectNomHeight, "S");
     y += 5;
     doc.text("Nombre del comisionado:", x + 3, y);
-    doc.text(solicitud_gasto.empleado_Solicitante, x + 60, y, {
+    doc.text(solicitud_gasto.empleado_Solicitante, x + 55, y, {
       align: "justify",
       maxWidth: pdfWidth - 79,
     });
@@ -70,7 +70,7 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     doc.rect(x + 53, y, 146, rectHeight, "S");
     y += 5;
     doc.text("Adscripción:", x + 3, y);
-    doc.text(solicitud_gasto.area, x + 60, y);
+    doc.text(solicitud_gasto.area, x + 55, y);
     y += 7;
     doc.rect(x - 2, y, pdfWidth - 15, rectHeight, "S");
     y += 7;
@@ -83,20 +83,20 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     doc.rect(x + 53, y, 146, rectHeight, "S");
     y += 7;
     doc.text("No. Oficio comisión:", x + 3, y);
-    doc.text(solicitud_gasto.folio, x + 60, y);
+    doc.text(solicitud_gasto.folio, x + 55, y);
     y += 1;
 
     let strArrDest = doc.splitTextToSize(
       solicitud_gasto.destino_String,
       pdfWidth - 77
     );
-    let rectDestHeight = 6 * strArrDest.length;
+    let rectDestHeight = 6 * strArrDest.length + 2;
 
     doc.rect(x - 2, y, 55, rectDestHeight, "S");
     doc.rect(x + 53, y, 146, rectDestHeight, "S");
 
     doc.text("Lugar de la comisión:", x + 3, y + 6);
-    doc.text(solicitud_gasto.destino_String, x + 60, y + 6, {
+    doc.text(solicitud_gasto.destino_String, x + 55, y + 6, {
       align: "justify",
       maxWidth: pdfWidth - 79,
     });
@@ -107,7 +107,7 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     doc.text("Periodo de la comisión:", x + 3, y);
     doc.text(
       `Del ${solicitud_gasto.fecha_Salida} al ${solicitud_gasto.fecha_LLegada}`,
-      x + 60,
+      x + 55,
       y
     );
     y += 1;
@@ -119,7 +119,7 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
       `${solicitud_gasto.medio_Transporte} ${
         solicitud_gasto.medio_Transporte_Especifico ?? ""
       }`,
-      x + 60,
+      x + 55,
       y
     );
     y += 1;
@@ -127,7 +127,7 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     doc.rect(x + 53, y, 146, rectHeight, "S");
     y += 7;
     doc.text("Vehículo:", x + 3, y);
-    doc.text(solicitud_gasto.vehiculo ?? "N/A", x + 60, y);
+    doc.text(solicitud_gasto.vehiculo ?? "N/A", x + 55, y);
     y += 1;
     doc.rect(x - 2, y, 55, rectHeight, "S");
     doc.rect(x + 53, y, 146, rectHeight, "S");
@@ -144,17 +144,26 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
       solicitud_gasto.actividad,
       pdfWidth - 77
     );
-    let rectActHeight = 6 * strArrObjetivo.length;
-    doc.rect(x - 2, y, 55, rectActHeight, "S");
-    doc.rect(x + 53, y, 146, rectActHeight, "S");
+    let rectActHeight = 5.5 * strArrObjetivo.length;
+    doc.rect(x - 2, y, 55, rectActHeight + 2, "S");
+    doc.rect(x + 53, y, 146, rectActHeight + 2, "S");
     y += 5;
     doc.text("Objetivo de la comisión:", x + 3, y);
-    doc.text(solicitud_gasto.actividad, x + 60, y, {
+    doc.text(solicitud_gasto.actividad, x + 55, y, {
       align: "justify",
       maxWidth: pdfWidth - 79,
     });
 
-    y += rectActHeight;
+    if (y > 145) {
+      doc.addPage();
+      doc.setPage();
+
+      x = 10;
+      y = 10;
+    } else {
+      y += rectActHeight;
+    }
+
     doc.rect(x - 2, y, pdfWidth - 15, rectHeight, "S");
     let titleResumen = "Resumen de las actividades realizadas";
     let titlerESUMENWidth = doc.getTextWidth(titleResumen);
@@ -167,7 +176,7 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
       informe.actividad_Realizada,
       pdfWidth - 20
     );
-    let rectResumHeight = 6 * strArrResumen.length;
+    let rectResumHeight = 5.5 * strArrResumen.length;
     doc.rect(x - 2, y, pdfWidth - 15, rectResumHeight, "S");
     y += 5;
     doc.text(informe.actividad_Realizada, x, y, {
@@ -189,18 +198,20 @@ const GeneraInforme = async (solicitud_gasto, informe, evidencias) => {
     let titlerConclusionWidth = doc.getTextWidth(titleConclusion);
     let titlexConslusion = (pdfWidth - titlerConclusionWidth) / 2;
     y += 6;
-    doc.text(titleConclusion, titlexConslusion, y);
+    doc.text(titleConclusion, titlexConslusion, y, {
+      align: "justify",
+      maxWidth: pdfWidth - 20,
+    });
 
     let strArrConclusion = doc.splitTextToSize(
       informe.conclusion,
       pdfWidth - 20
     );
-    let rectConcluHeight = 6 * strArrConclusion.length;
+    let rectConcluHeight = 5.5 * strArrConclusion.length;
     y += 2;
     doc.rect(x - 2, y, pdfWidth - 15, rectConcluHeight, "S");
     y += 5;
     doc.text(informe.conclusion, x, y, {
-      align: "justify",
       maxWidth: pdfWidth - 20,
     });
 
